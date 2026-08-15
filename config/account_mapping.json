@@ -1,0 +1,70 @@
+[
+  {
+    "keywords": [
+      "internet",
+      "téléphone",
+      "telecom"
+    ],
+    "account": "626",
+    "confidence": 0.94
+  },
+  {
+    "keywords": [
+      "assurance"
+    ],
+    "account": "616",
+    "confidence": 0.94
+  },
+  {
+    "keywords": [
+      "honoraires",
+      "avocat",
+      "consultant",
+      "conseil"
+    ],
+    "account": "6226",
+    "confidence": 0.88
+  },
+  {
+    "keywords": [
+      "banque",
+      "commission bancaire"
+    ],
+    "account": "627",
+    "confidence": 0.94
+  },
+  {
+    "keywords": [
+      "fournitures",
+      "papeterie"
+    ],
+    "account": "6064",
+    "confidence": 0.9
+  },
+  {
+    "keywords": [
+      "loyer",
+      "location bureau"
+    ],
+    "account": "6132",
+    "confidence": 0.9
+  },
+  {
+    "keywords": [
+      "publicité",
+      "marketing"
+    ],
+    "account": "623",
+    "confidence": 0.87
+  },
+  {
+    "keywords": [
+      "ordinateur",
+      "machine",
+      "équipement",
+      "materiel"
+    ],
+    "account": "IMMOBILISATION_A_VERIFIER",
+    "confidence": 0.6
+  }
+]

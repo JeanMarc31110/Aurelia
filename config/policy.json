@@ -1,0 +1,44 @@
+{
+  "name": "AURELIA",
+  "version": "5.0.0",
+  "country": "FR",
+  "thresholds": {
+    "rounding_tolerance": 0.02,
+    "accounting_confidence": 0.85,
+    "high_amount_eur": 5000,
+    "critical_amount_eur": 25000,
+    "bank_match_amount_tolerance": 0.02,
+    "reminder_days": [
+      1,
+      8,
+      15,
+      30
+    ]
+  },
+  "autonomy": {
+    "extract": true,
+    "ocr_fallback": true,
+    "validate": true,
+    "create_parties": true,
+    "propose_accounting": true,
+    "learn_from_validation": true,
+    "create_email_draft": true,
+    "send_email_automatically": false,
+    "prepare_payment": true,
+    "execute_payment": false,
+    "change_bank_details": false,
+    "submit_tax_return": false
+  },
+  "einvoicing": {
+    "receive_all": "2026-09-01",
+    "issue_large_eti": "2026-09-01",
+    "issue_sme_micro": "2027-09-01",
+    "formats": [
+      "UBL",
+      "CII",
+      "FACTUR-X"
+    ],
+    "approved_platform_required": true
+  },
+  "retention_years": 10
+}

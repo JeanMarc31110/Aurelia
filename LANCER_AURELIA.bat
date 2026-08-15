@@ -1,0 +1,17 @@
+@echo off
+setlocal
+title AURELIA V5
+cd /d "%~dp0"
+
+if not exist ".venv\Scripts\activate.bat" (
+    echo AURELIA n'est pas encore installee.
+    echo Lancement de l'installateur...
+    call INSTALLER_AURELIA.bat
+)
+
+call ".venv\Scripts\activate.bat"
+
+start "" http://127.0.0.1:8000
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+
+pause
