@@ -54,6 +54,8 @@ AURELIA V5 ajoute une couche d'automatisation opérationnelle à la V4.
 
 ## Installation Windows
 
+### Développement
+
 Double-cliquer sur `DEMARRER_AURELIA_V5.bat`.
 
 Compte de démonstration :
@@ -61,6 +63,58 @@ Compte de démonstration :
 - mot de passe : `Aurelia-ChangeMe!`
 
 Changez ce mot de passe avant usage réel.
+
+### Installation professionnelle
+
+#### Installation interactive
+1. Téléchargez la dernière release depuis [GitHub Releases](https://github.com/JeanMarc31110/Aurelia/releases)
+2. Double-cliquez sur `Aurelia_Setup_*.exe`
+3. Suivez l'assistant d'installation
+4. Aurelia s'installe dans `C:\Program Files\Aurelia`
+5. Les raccourcis de bureau et du menu Démarrage sont créés automatiquement
+
+#### Déploiement silencieux (sans interface)
+```powershell
+# Télécharger et installer depuis le script PowerShell
+.\install-client-pro.ps1
+
+# Avec token GitHub (pour authenticated requests)
+.\install-client-pro.ps1 -Token "your-github-token"
+
+# Ou utiliser le wrapper batch
+install-client-pro.bat
+```
+
+#### Déploiement en masse (MDM, SCCM, etc.)
+```batch
+REM Installation avec options
+Aurelia_Setup_1.0.0.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+
+REM Désinstallation
+"C:\Program Files\Aurelia\unins000.exe" /VERYSILENT /NORESTART
+```
+
+### Configuration du code-signing (optionnel)
+
+Pour signer les exécutables avec votre certificat Authenticode :
+
+1. **Ajouter les secrets GitHub :**
+   - `WINDOWS_SIGNING_CERT_BASE64` : Votre certificat PFX encodé en base64
+   - `WINDOWS_SIGNING_CERT_PASSWORD` : Le mot de passe du certificat
+
+2. **Générer base64 du certificat :**
+```powershell
+$cert = [System.Convert]::ToBase64String([System.IO.File]::ReadAllBytes("C:\path\to\cert.pfx"))
+$cert | Set-Clipboard
+```
+
+3. **Ajouter les secrets dans GitHub :**
+   - Allez à `Settings` > `Secrets and variables` > `Actions`
+   - Créez les deux secrets listés ci-dessus
+
+Le pipeline CI/CD signera automatiquement les exécutables lors des releases.
+
+**Note :** Les builds non signés sont réservés au développement. Ne demandez jamais aux clients de désactiver Windows Defender ou SmartScreen.
 
 ## Gmail OAuth
 
