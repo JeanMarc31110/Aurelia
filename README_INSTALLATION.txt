@@ -1,166 +1,42 @@
-AURELIA V5
-===========
+AURELIA 5.1.0 — INSTALLATION WINDOWS
+=====================================
 
-AGENT DE GESTION AUTOMATISEE DES FACTURES NUMERIQUES
+1. Lancer AureliaSetup.exe.
+2. Conserver le dossier proposé ou choisir un autre dossier programme.
+3. Lancer Aurelia depuis le menu Démarrer ou le raccourci Bureau optionnel.
+4. Le navigateur s'ouvre sur http://127.0.0.1:8000 lorsque le serveur est prêt.
+5. À la première installation, créer l'administrateur et renseigner l'entreprise.
 
-CONTENU DU PACK
----------------
+Aucun Python, PowerShell, pip ou Tesseract séparé n'est requis sur le PC client.
+Aucun compte ou mot de passe par défaut n'est créé.
 
-INSTALLER_AURELIA.bat
-    Installe automatiquement AURELIA sous Windows.
+DONNÉES
+-------
 
-LANCER_AURELIA.bat
-    Lance le programme après installation.
+Données internes : %LOCALAPPDATA%\Aurelia
+Documents :        %USERPROFILE%\Documents\Aurelia
 
-ARRETER_AURELIA.bat
-    Arrête le serveur AURELIA local.
-
-INSTALLER_AURELIA.ps1
-    Installateur PowerShell de secours.
-
-README.md
-    Documentation technique complète.
-
-.env.example
-    Configuration des connexions Gmail, OCR, Sage, Cegid,
-    Pennylane et plateforme agréée.
-
-INSTALLATION RAPIDE
--------------------
-
-1. Décompressez entièrement le fichier ZIP.
-
-2. Ouvrez le dossier AURELIA_V5_INSTALL.
-
-3. Double-cliquez sur :
-
-       INSTALLER_AURELIA.bat
-
-4. L'installateur :
-   - vérifie la présence de Python ;
-   - crée l'environnement virtuel ;
-   - installe les bibliothèques nécessaires ;
-   - prépare la configuration.
-
-5. Ensuite double-cliquez sur :
-
-       LANCER_AURELIA.bat
-
-6. AURELIA s'ouvrira automatiquement dans votre navigateur :
-
-       http://127.0.0.1:8000
-
-IDENTIFIANTS INITIAUX
----------------------
-
-Utilisateur :
-    admin
-
-Mot de passe :
-    Aurelia-ChangeMe!
-
-IMPORTANT :
-Changez ce mot de passe avant toute utilisation réelle.
-
-FONCTIONS PRINCIPALES
----------------------
-
-- Lecture des factures PDF.
-- Lecture Factur-X.
-- Lecture UBL.
-- Lecture CII.
-- OCR automatique de secours.
-- Détection des doublons.
-- Contrôle HT / TVA / TTC.
-- Pré-comptabilisation.
-- Affectation comptable avec score de confiance.
-- Apprentissage après validation.
-- Gestion fournisseurs.
-- Gestion clients.
-- Factures clients.
-- Génération PDF.
-- Relances clients.
-- Brouillons Gmail.
-- Import bancaire.
-- Rapprochement bancaire.
-- Export comptable.
-- Connecteurs Sage, Cegid, Pennylane et EBP.
-- Connecteur plateforme agréée.
-- Journal d'audit.
-- Contrôle fraude et changement de RIB.
-
-GMAIL
------
-
-Pour connecter Gmail, il faut créer un identifiant OAuth Google.
-
-Placer ensuite le fichier :
-
-    google_client_secret.json
-
-dans :
-
-    config\
-
-Puis compléter le fichier :
-
-    .env
+La mise à jour et la désinstallation conservent ces deux emplacements. La base,
+les factures, les originaux, les erreurs, les exports et les backups ne sont pas
+supprimés par le désinstalleur.
 
 OCR
 ---
 
-Pour lire les PDF scannés, AURELIA peut utiliser Tesseract OCR.
+Le produit embarque Tesseract 5.4 et les langues eng, fra, spa et osd. Les
+notices sont disponibles dans THIRD_PARTY_NOTICES.txt.
 
-Si Tesseract est installé mais non détecté automatiquement,
-renseignez son chemin dans .env :
-
-    TESSERACT_CMD=C:\Program Files\Tesseract-OCR\tesseract.exe
-
-SECURITE
+SÉCURITÉ
 --------
 
-AURELIA ne réalise PAS automatiquement :
+Aurelia écoute uniquement sur 127.0.0.1:8000. Une seule instance peut utiliser
+un environnement de données. Les décisions financières sensibles restent
+humaines.
 
-- de paiement bancaire ;
-- de changement de RIB ;
-- de déclaration fiscale ;
-- de validation automatique d'une TVA incertaine.
+DIAGNOSTIC
+----------
 
-Ces opérations nécessitent volontairement une validation humaine.
+Journal : %LOCALAPPDATA%\Aurelia\logs\aurelia.log
 
-DONNEES
--------
-
-La base locale se trouve dans :
-
-    data\aurelia_v5.db
-
-Les documents importés se trouvent dans :
-
-    data\uploads\
-
-Les documents générés se trouvent dans :
-
-    data\generated\
-
-Les exports comptables se trouvent dans :
-
-    data\exports\
-
-INSTALLATION SUR UN AUTRE PC
-----------------------------
-
-Le ZIP peut être copié sur un autre ordinateur Windows.
-
-Décompressez-le puis exécutez simplement :
-
-    INSTALLER_AURELIA.bat
-
-Aucune installation manuelle des bibliothèques Python n'est nécessaire.
-
-VERSION
--------
-
-AURELIA V5
-Pack Windows
-Août 2026
+Si le port 8000 est occupé par un autre logiciel, Aurelia le signale et ne
+choisit pas silencieusement un autre port.

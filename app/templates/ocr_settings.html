@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% set active_page='ocr' %}
+{% block title %}OCR — Aurelia{% endblock %}{% block page_name %}Paramètres · OCR{% endblock %}
+{% block content %}<header class="page-header"><div class="page-header-copy"><p class="eyebrow">Paramètres</p><h1>Tesseract OCR</h1><p class="page-subtitle">Configuration du moteur de lecture de documents scannés.</p></div><span class="status {{'status-approved' if ocr.available else 'status-rejected'}}">{{'Disponible' if ocr.available else 'Indisponible'}}</span></header><div class="card">
+{% if saved %}<div class="notice success"><div>Configuration enregistrée.</div></div>{% endif %}
+{% if ocr.available %}<dl class="facts"><dt>Version</dt><dd>{{ocr.version}}</dd><dt>Chemin</dt><dd>{{ocr.path}}</dd><dt>Source</dt><dd>{{ocr.source}}</dd><dt>Langues installées</dt><dd>{{ocr.installed_languages|join(', ')}}</dd><dt>Langues utilisées</dt><dd>{{ocr.used_languages|join(' + ')}}</dd></dl>{% else %}<div class="notice error"><div>{{ocr.instruction}}</div></div>{% endif %}
+{% if ocr.missing_languages %}<div class="notice warning"><div><b>Langues configurées mais absentes :</b> {{ocr.missing_languages|join(', ')}}</div></div>{% endif %}
+<form action="/settings/ocr" method="post"><label>Chemin de tesseract.exe</label><input name="tesseract_cmd" value="{{ocr.path or ''}}" placeholder="C:\Program Files\Tesseract-OCR\tesseract.exe"><br><br><label>Langues OCR (codes séparés par +)</label><input name="ocr_languages" value="{{ocr.configured_languages}}" placeholder="fra+eng+spa"><br><br><button class="btn">Enregistrer et vérifier</button></form>
+<p class="muted">Aurelia ne télécharge et n’installe aucun binaire automatiquement.</p></div>{% endblock %}

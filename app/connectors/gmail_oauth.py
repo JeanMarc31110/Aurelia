@@ -1,5 +1,6 @@
 import os,base64
 from pathlib import Path
+from app.local_config import load_local_config
 from email.mime.text import MIMEText
 
 SCOPES=["https://www.googleapis.com/auth/gmail.modify","https://www.googleapis.com/auth/gmail.compose"]
@@ -15,7 +16,10 @@ def _google_imports():
         raise RuntimeError("Connexion Gmail non disponible : installez les dépendances Google de requirements.txt") from e
 
 def _paths():
-    cred=Path(os.getenv("GMAIL_CREDENTIALS_FILE","config/google_client_secret.json"));token=Path(os.getenv("GMAIL_TOKEN_FILE","data/gmail/token.json"));token.parent.mkdir(parents=True,exist_ok=True);return cred,token
+    local=load_local_config().data_dir
+    cred=Path(os.getenv("GMAIL_CREDENTIALS_FILE",str(local/"config"/"google_client_secret.json")))
+    token=Path(os.getenv("GMAIL_TOKEN_FILE",str(local/"gmail"/"token.json")))
+    token.parent.mkdir(parents=True,exist_ok=True);return cred,token
 
 def service(interactive=True):
     Credentials,InstalledAppFlow,Request,build=_google_imports()

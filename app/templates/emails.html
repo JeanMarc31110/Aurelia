@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% import "ui_macros.html" as ui %}{% set active_page='emails' %}
+{% block title %}Import e-mail — Aurelia{% endblock %}{% block page_name %}Outils · Import e-mail{% endblock %}
+{% block content %}<header class="page-header"><div class="page-header-copy"><p class="eyebrow">Import local</p><h1>Importer un e-mail</h1><p class="page-subtitle">Analyse d’un fichier EML et de ses pièces jointes, sans connexion distante.</p></div></header>
+<div class="card"><h2>Importer un fichier .eml</h2><form action="/emails/import" method="post" enctype="multipart/form-data"><label>E-mail exporté<input type="file" name="file" accept=".eml" required></label><button class="btn" type="submit">Analyser</button></form></div>
+{% if result %}<div class="card section-gap"><h3>{{result.message.source_subject}}</h3><p class="muted">De {{result.message.source_sender}}</p>{% for attachment in result.attachments %}<div class="amount-row"><b>{{attachment.filename}}</b><span class="status status-{{attachment.status|lower}}">{{ui.status_label(attachment.status)}}</span></div>{% else %}<p class="empty-state">Aucune pièce jointe compatible.</p>{% endfor %}</div>{% endif %}
+{% endblock %}

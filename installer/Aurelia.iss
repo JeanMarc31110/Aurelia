@@ -1,5 +1,7 @@
-#define MyAppName "AURELIA"
-#define MyAppVersion "5.0.1"
+#define VersionHandle FileOpen(SourcePath + "\..\VERSION.txt")
+#define MyAppVersion Trim(FileRead(VersionHandle))
+#expr FileClose(VersionHandle)
+#define MyAppName "Aurelia"
 #define MyAppPublisher "FEWURA"
 #define MyAppExeName "Aurelia.exe"
 
@@ -8,17 +10,17 @@ AppId={{8CE2A2D7-E18A-4B10-A913-2AC7CE2188C1}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
-DefaultDirName={autopf}\FEWURA\AURELIA
-DefaultGroupName=FEWURA\AURELIA
+DefaultDirName={localappdata}\Programs\Aurelia
+DefaultGroupName=Aurelia
 OutputDir=output
-OutputBaseFilename=AURELIA_Setup_5.0.1
+OutputBaseFilename=AureliaSetup
 Compression=lzma2
 SolidCompression=yes
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
-PrivilegesRequired=admin
+PrivilegesRequired=lowest
 WizardStyle=modern
-UninstallDisplayName=AURELIA
+UninstallDisplayName=Aurelia
 CreateUninstallRegKey=yes
 SetupLogging=yes
 CloseApplications=yes
@@ -27,6 +29,10 @@ DisableProgramGroupPage=yes
 UsePreviousAppDir=yes
 UsePreviousGroup=yes
 MinVersion=10.0.17763
+VersionInfoVersion={#MyAppVersion}
+VersionInfoCompany={#MyAppPublisher}
+VersionInfoDescription=Aurelia — facturation et pré-comptabilité locale
+VersionInfoProductName={#MyAppName}
 
 [Languages]
 Name: "french"; MessagesFile: "compiler:Languages\French.isl"
@@ -34,21 +40,15 @@ Name: "french"; MessagesFile: "compiler:Languages\French.isl"
 [Files]
 Source: "..\dist\Aurelia\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
-[Dirs]
-Name: "{app}\data"
-Name: "{app}\data\uploads"
-Name: "{app}\data\archive"
-Name: "{app}\data\exports"
-Name: "{app}\data\generated"
-Name: "{app}\data\gmail"
-Name: "{app}\data\ocr"
-
-[Icons]
-Name: "{autoprograms}\FEWURA\AURELIA"; Filename: "{app}\{#MyAppExeName}"
-Name: "{autodesktop}\AURELIA"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
-
 [Tasks]
 Name: "desktopicon"; Description: "Créer un raccourci sur le Bureau"; GroupDescription: "Raccourcis :"; Flags: unchecked
 
+[Icons]
+Name: "{autoprograms}\Aurelia"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"
+Name: "{autodesktop}\Aurelia"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Tasks: desktopicon
+
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "Lancer AURELIA"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Description: "Lancer Aurelia"; Flags: nowait postinstall skipifsilent
+
+; Aucune donnée utilisateur n'est installée dans {app}. La désinstallation retire
+; uniquement le programme et les raccourcis. LocalAppData et Documents sont conservés.

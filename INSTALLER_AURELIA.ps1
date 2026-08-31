@@ -30,6 +30,24 @@ if (-not (Test-Path ".venv")) {
 & ".\.venv\Scripts\python.exe" -m pip install --upgrade pip
 & ".\.venv\Scripts\pip.exe" install -r requirements.txt
 
+$tesseract = Get-Command tesseract.exe -ErrorAction SilentlyContinue
+if (-not $tesseract) {
+    $commonTesseract = Join-Path $env:ProgramFiles "Tesseract-OCR\tesseract.exe"
+    if (Test-Path -LiteralPath $commonTesseract) {
+        $tesseract = Get-Item -LiteralPath $commonTesseract
+    }
+}
+
+if ($tesseract) {
+    $tesseractPath = $tesseract.Source
+    if (-not $tesseractPath) { $tesseractPath = $tesseract.FullName }
+    Write-Host "Tesseract detecte : $tesseractPath"
+} else {
+    Write-Host "Tesseract OCR non detecte."
+    Write-Host "Installez une distribution Windows maitrisee, puis configurez son chemin dans Parametres > OCR."
+    Write-Host "Aucun binaire OCR n'est telecharge automatiquement par Aurelia."
+}
+
 Write-Host ""
 Write-Host "Installation terminee."
 Write-Host "Lancez LANCER_AURELIA.bat"

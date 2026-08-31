@@ -1,1 +1,8 @@
-<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/static/style.css"></head><body><div class="login"><h1>AURELIA V5</h1>{% if error %}<p>{{error}}</p>{% endif %}<form method="post"><input name="username" placeholder="Utilisateur"><br><br><input type="password" name="password" placeholder="Mot de passe"><br><br><button class="btn">Connexion</button></form></div></body></html>
+{% extends "auth_base.html" %}
+{% block title %}Connexion — Aurelia{% endblock %}
+{% block content %}
+<p class="eyebrow">Espace sécurisé</p><h1>Connexion</h1><p class="muted">Accédez à votre environnement Aurelia local.</p>
+{% if configured %}<div class="notice success">Configuration terminée. Vous pouvez vous connecter.</div>{% endif %}
+{% if error %}<div class="notice error">{{error}}</div>{% endif %}
+<form method="post"><label>Nom d’utilisateur<input name="username" autocomplete="username" required autofocus></label><label>Mot de passe<input type="password" name="password" autocomplete="current-password" required></label><button class="btn" type="submit">Se connecter</button></form>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% macro status_label(code) -%}
+{%- set labels = {
+  'UNPAID':'Impayée', 'PAID':'Payée', 'PARTIALLY_PAID':'Partiellement payée',
+  'APPROVED':'Validée', 'REJECTED':'Rejetée', 'REVIEW_REQUIRED':'À vérifier',
+  'PENDING':'En attente', 'DUPLICATE':'Doublon', 'ERROR':'Erreur',
+  'PAYMENT_MISMATCH':'Écart de paiement', 'OVERDUE':'En retard',
+  'IGNORED':'Ignorée', 'MATCHED':'Rapprochée', 'CANCELLED':'Annulée',
+  'NEW':'Nouveau', 'ACCEPTED':'Accepté', 'ACTIVE':'Actif', 'INACTIVE':'Inactif'
+} -%}
+{{- labels.get(code, code|replace('_',' ')|capitalize if code else 'À confirmer') -}}
+{%- endmacro %}
+
+{% macro direction_label(code) -%}{{ {'purchase':'Achat','sale':'Vente','unknown':'À déterminer'}.get(code,'À déterminer') }}{%- endmacro %}
+{% macro document_label(code) -%}{{ {'invoice':'Facture','credit_note':'Avoir','quote':'Devis','purchase_order':'Bon de commande'}.get(code,'Document') }}{%- endmacro %}
+{% macro integration_label(code) -%}{{ {'gmail':'Import Gmail','pennylane':'Pennylane','sage':'Sage','cegid':'Cegid','approved_platform':'Plateforme agréée','ebp':'Export EBP'}.get(code,code|replace('_',' ')|capitalize) }}{%- endmacro %}

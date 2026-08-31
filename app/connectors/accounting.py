@@ -1,6 +1,4 @@
-import os,requests,csv
-from pathlib import Path
-from app.db import connect
+import os,requests
 
 class GenericRESTConnector:
     def __init__(self,base_url,token=None,headers=None):
@@ -30,14 +28,6 @@ class CegidConnector(GenericRESTConnector):
         if os.getenv("CEGID_SUBSCRIPTION_KEY"):headers["Ocp-Apim-Subscription-Key"]=os.getenv("CEGID_SUBSCRIPTION_KEY")
         return cls(os.getenv("CEGID_BASE_URL"),headers=headers)
 
-def export_ebp_csv(path):
-    con=connect();rows=[dict(r) for r in con.execute("SELECT * FROM invoices WHERE status='APPROVED' ORDER BY issue_date,id")];con.close()
-    path=Path(path);path.parent.mkdir(parents=True,exist_ok=True)
-    with path.open("w",encoding="utf-8-sig",newline="") as f:
-        w=csv.writer(f,delimiter=";");w.writerow(["Date","Journal","Compte","Libelle","Debit","Credit","Piece"])
-        for i in rows:
-            acc=i["approved_account"] or i["proposed_account"] or "A_VERIFIER"
-            w.writerow([i["issue_date"],"ACH",acc,i["supplier_name"],i["net_amount"],0,i["invoice_number"]])
-            w.writerow([i["issue_date"],"ACH","44566","TVA déductible",i["vat_amount"],0,i["invoice_number"]])
-            w.writerow([i["issue_date"],"ACH","401",i["supplier_name"],0,i["gross_amount"],i["invoice_number"]])
-    return str(path)
+def export_ebp_csv(path, filters=None, username="system"):
+    from app.services.accounting_exports import create_accounting_export
+    return create_accounting_export(path, filters or {}, username)["path"]

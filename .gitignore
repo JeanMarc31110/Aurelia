@@ -1,0 +1,50 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+session.secret
+*.pem
+*.key
+
+# Databases and user/business data
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+data/
+Documents/Aurelia/
+AppData/Local/Aurelia/
+
+# Local backups and generated artifacts
+BACKUP_*/
+backups/
+build/
+dist/
+installer/output/
+captures/
+logs/
+*.log
+*.tmp
+*.temp
+
+# Python environments and caches
+.venv/
+.buildvenv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Large machine/OS artifacts
+*.iso
+*.vdi
+*.vbox
+*.vbox-prev
+
+# Editor/OS noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

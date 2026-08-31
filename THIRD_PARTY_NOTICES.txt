@@ -1,0 +1,43 @@
+AURELIA 5.1.0 — THIRD-PARTY NOTICES
+====================================
+
+Tesseract OCR runtime
+---------------------
+Version bundled: 5.4.0.20240606 (64-bit Windows build)
+Runtime source used for this build: the locally installed distribution produced by
+Universitätsbibliothek Mannheim / UB Mannheim.
+Original installer filename: tesseract-ocr-w64-setup-5.4.0.20240606.exe
+Publisher metadata: Universitätsbibliothek Mannheim
+Upstream download location:
+https://digi.bib.uni-mannheim.de/tesseract/tesseract-ocr-w64-setup-5.4.0.20240606.exe
+Installer SHA-256:
+C885FFF6998E0608BA4BB8AB51436E1C6775C2BAFC2559A19B423E18678B60C9
+
+Tesseract source code is licensed under the Apache License 2.0. The complete
+license and authors files distributed with this runtime are preserved under
+resources/tesseract/doc. Project: https://github.com/tesseract-ocr/tesseract
+
+Language models
+---------------
+Bundled models: eng, fra, spa and osd. Tesseract tessdata is licensed under the
+Apache License 2.0: https://github.com/tesseract-ocr/tessdata
+
+Leptonica and native dependencies
+---------------------------------
+The Windows runtime includes Leptonica and the native libraries required by the
+UB Mannheim distribution. Tesseract documents Leptonica as using a BSD 2-clause
+style license. Other native libraries retain their respective upstream licenses.
+Their binary filenames are shipped unmodified beside tesseract.exe. Before a
+public commercial release, FEWURA must retain an archived copy of the original
+installer and complete its legal inventory of every transitive native library.
+
+Python dependencies
+-------------------
+Aurelia also bundles the Python packages pinned in requirements.lock.txt. Each
+package remains governed by its own license. This notice does not replace those
+license terms.
+
+No warranty
+-----------
+Third-party components are provided under their respective licenses, without
+additional warranty from their upstream authors.

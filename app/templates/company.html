@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% set active_page='company' %}
+{% block title %}Mon entreprise — Aurelia{% endblock %}{% block page_name %}Paramètres · Entreprise{% endblock %}
+{% block content %}<header class="page-header"><div class="page-header-copy"><p class="eyebrow">Paramètres</p><h1>Mon entreprise</h1><p class="page-subtitle">Identité utilisée pour distinguer les achats, les ventes et les données fiscales.</p></div></header><div class="card"><h2>Informations légales et coordonnées</h2>
+{% if saved %}<div class="notice success"><div>La fiche entreprise a été enregistrée.</div></div>{% endif %}
+{% if error %}<div class="notice error"><div>{{error}}</div></div>{% endif %}
+<p class="muted">Cette identité permet à Aurelia de déterminer si une facture est une vente ou un achat. Les identifiants fiscaux sont prioritaires.</p>
+<form action="/settings/company" method="post">
+<div class="grid2"><div><label>Raison sociale *</label><input name="legal_name" required value="{{company.legal_name or '' if company else ''}}"></div><div><label>Nom commercial</label><input name="trade_name" value="{{company.trade_name or '' if company else ''}}"></div></div><br>
+<div class="grid2"><div><label>Pays</label><input name="country" value="{{company.country or '' if company else ''}}"></div><div><label>Adresse</label><input name="address" value="{{company.address or '' if company else ''}}"></div></div><br>
+<label>Devise</label><input name="currency" maxlength="3" value="{{company.currency or 'EUR' if company else 'EUR'}}"><br><br>
+<div class="grid2"><div><label>Code postal</label><input name="postal_code" value="{{company.postal_code or '' if company else ''}}"></div><div><label>Ville</label><input name="city" value="{{company.city or '' if company else ''}}"></div></div><br>
+<div class="grid2"><div><label>VAT ID</label><input name="vat_id" value="{{company.vat_id or '' if company else ''}}"></div><div><label>NIF</label><input name="nif" value="{{company.nif or '' if company else ''}}"></div></div><br>
+<div class="grid2"><div><label>SIREN</label><input name="siren" value="{{company.siren or '' if company else ''}}"></div><div><label>SIRET</label><input name="siret" value="{{company.siret or '' if company else ''}}"></div></div><br>
+<div class="grid2"><div><label>IBAN</label><input name="iban" value="{{company.iban or '' if company else ''}}"></div><div><label>BIC</label><input name="bic" value="{{company.bic or '' if company else ''}}"></div></div><br>
+<div class="grid2"><div><label>E-mail</label><input name="email" type="email" value="{{company.email or '' if company else ''}}"></div><div><label>Téléphone</label><input name="phone" value="{{company.phone or '' if company else ''}}"></div></div><br>
+<label>Alias du nom — un par ligne</label><textarea name="aliases" rows="4">{{company.aliases_text or '' if company else ''}}</textarea><br><br>
+<button class="btn" type="submit">Enregistrer les informations</button></form></div>{% endblock %}

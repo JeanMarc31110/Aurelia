@@ -2,6 +2,9 @@
 
 AURELIA V5 ajoute une couche d'automatisation opérationnelle à la V4.
 
+Le fonctionnement local autonome de la Phase 4 (Inbox surveillée, chemins,
+anti-doublon et backups) est décrit dans `docs/LOCAL_OPERATION.md`.
+
 ## Nouveautés V5
 
 ### Entrées
@@ -54,13 +57,9 @@ AURELIA V5 ajoute une couche d'automatisation opérationnelle à la V4.
 
 ## Installation Windows
 
-Double-cliquer sur `DEMARRER_AURELIA_V5.bat`.
-
-Compte de démonstration :
-- utilisateur : `admin`
-- mot de passe : `Aurelia-ChangeMe!`
-
-Changez ce mot de passe avant usage réel.
+Installer `AureliaSetup.exe`, puis lancer Aurelia depuis le menu Démarrer.
+Au premier lancement, l’interface locale demande la création de l’administrateur
+et la configuration de l’entreprise. Aucun identifiant par défaut n’est créé.
 
 ## Gmail OAuth
 
@@ -80,7 +79,8 @@ AURELIA tente d'abord :
 2. couche texte PDF ;
 3. OCR si nécessaire.
 
-Pour OCR local, installer Tesseract sur Windows et renseigner `TESSERACT_CMD` si nécessaire.
+Le build Windows contient Tesseract et les langues `eng`, `fra`, `spa` et `osd`.
+En développement, un Tesseract système reste utilisable en secours.
 
 ## API
 
