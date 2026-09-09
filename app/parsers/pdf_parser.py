@@ -6,6 +6,7 @@ from datetime import date
 from pathlib import Path
 
 from pypdf import PdfReader
+from pypdf.errors import ParseError, PdfReadError
 
 from .xml_invoice import parse_xml_invoice
 from app.services.ocr import ocr_pdf
@@ -597,10 +598,20 @@ def _parse_text(text, company=_ACTIVE_COMPANY, positioned_pages=None, ocr_mode=F
 
 
 def parse_pdf(path):
-    reader = PdfReader(str(path))
-    attachments = getattr(reader, "attachments", {}) or {}
+    try:
+        reader = PdfReader(str(path))
+        # Encrypted PDFs with an empty password remain readable.
+        if reader.is_encrypted and reader.decrypt("") == 0:
+            raise ValueError("PDF protégé par un mot de passe : fournissez une copie déverrouillée.")
+    except (PdfReadError, ParseError) as exc:
+        raise ValueError("PDF invalide ou endommagé : lecture impossible.") from exc
+
     standard_names = {"factur-x.xml": 0, "zugferd-invoice.xml": 1, "xrechnung.xml": 2}
-    attachment_items = sorted(attachments.items(), key=lambda item: standard_names.get(item[0].lower(), 10))
+    try:
+        attachments = getattr(reader, "attachments", {}) or {}
+        attachment_items = sorted(attachments.items(), key=lambda item: standard_names.get(item[0].lower(), 10))
+    except (PdfReadError, ParseError) as exc:
+        raise ValueError("PDF invalide ou endommagé : lecture des pièces jointes impossible.") from exc
     for name, blobs in attachment_items:
         if name.lower().endswith(".xml"):
             blob = blobs[0] if isinstance(blobs, list) else blobs
@@ -620,7 +631,10 @@ def parse_pdf(path):
             finally:
                 Path(temporary_xml).unlink(missing_ok=True)
 
-    page_results = [_positioned_page(page, index) for index, page in enumerate(reader.pages)]
+    try:
+        page_results = [_positioned_page(page, index) for index, page in enumerate(reader.pages)]
+    except (PdfReadError, ParseError) as exc:
+        raise ValueError("PDF invalide ou endommagé : extraction du texte impossible.") from exc
     text = "\n".join(result[0] for result in page_results)
     positioned_pages = [result[1] for result in page_results]
     ocr_used = False

@@ -1,8 +1,10 @@
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, PropertyMock, patch
 
+from pypdf import PdfReader, PdfWriter
+from pypdf.errors import ParseError, PdfReadError
 from reportlab.pdfgen import canvas
 
 from app import db
@@ -129,6 +131,146 @@ class PdfParserTests(unittest.TestCase):
         self.assertEqual(result["direction"], "purchase")
         self.assertEqual(result["lines_extraction_confidence"], "high")
         self.assertEqual(len(result["lines"]), 2)
+
+    def test_password_required_pdf_is_rejected_before_ocr(self):
+        path = Path(self.temporary_directory.name) / "encrypted.pdf"
+        writer = PdfWriter()
+        writer.add_blank_page(width=595, height=842)
+        writer.encrypt("secret")
+        with path.open("wb") as handle:
+            writer.write(handle)
+        with patch("app.parsers.pdf_parser.ocr_pdf") as ocr:
+            with self.assertRaisesRegex(ValueError, "mot de passe"):
+                parse_pdf(path)
+        ocr.assert_not_called()
+
+    def test_empty_password_pdf_preserves_text_and_path_types(self):
+        original = self._synthetic_pdf(self.temporary_directory.name)
+        expected = parse_pdf(original)
+        path = original.with_name("encrypted.pdf")
+        writer = PdfWriter()
+        writer.append_pages_from_reader(PdfReader(str(original)))
+        writer.encrypt("", owner_password="owner-secret")
+        with path.open("wb") as handle:
+            writer.write(handle)
+        for argument in (path, str(path)):
+            with self.subTest(argument=argument):
+                self.assertEqual(parse_pdf(argument), expected)
+
+    def test_empty_password_pdf_preserves_ocr_fallback(self):
+        path = Path(self.temporary_directory.name) / "encrypted_scan.pdf"
+        writer = PdfWriter()
+        writer.add_blank_page(width=595, height=842)
+        writer.encrypt("", owner_password="owner-secret")
+        with path.open("wb") as handle:
+            writer.write(handle)
+        for argument in (path, str(path)):
+            for ocr_result in (
+                {"ok": True, "text": SYNTHETIC_INVOICE, "confidence": 85},
+                {"ok": False, "error": "OCR unavailable"},
+            ):
+                with self.subTest(argument=argument, ok=ocr_result["ok"]):
+                    with patch("app.parsers.pdf_parser.ocr_pdf", return_value=ocr_result) as ocr:
+                        result = parse_pdf(argument)
+                    ocr.assert_called_once_with(argument)
+                    self.assertEqual(result["ocr_used"], ocr_result["ok"])
+                    self.assertEqual(result["needs_manual_extraction"], not ocr_result["ok"])
+                    self.assertEqual(result["format"], "PDF_OCR" if ocr_result["ok"] else "PDF_IMAGE")
+                    self.assertEqual(result["ocr_error"], ocr_result.get("error"))
+                    if ocr_result["ok"]:
+                        self.assertEqual(result["invoice_number"], "INV-2026-001")
+
+    def test_malformed_pdf_reports_read_error_without_ocr(self):
+        path = Path(self.temporary_directory.name) / "broken.pdf"
+        for content in (b"", b"not a PDF", b"%PDF-1.7\n1 0 obj\n<<"):
+            with self.subTest(content=content):
+                path.write_bytes(content)
+                with patch("app.parsers.pdf_parser.ocr_pdf") as ocr:
+                    with self.assertRaisesRegex(ValueError, "PDF invalide ou endommagé") as error:
+                        parse_pdf(path)
+                self.assertIsInstance(error.exception.__cause__, PdfReadError)
+                ocr.assert_not_called()
+
+    def test_pdf_read_failures_are_targeted_and_chained(self):
+        for stage in ("reader", "decrypt", "attachments", "attachment_items", "pages", "text"):
+            for exception_type in (PdfReadError, ParseError, RuntimeError, TypeError, OSError):
+                with self.subTest(stage=stage, exception_type=exception_type):
+                    failure = exception_type("failure")
+                    reader = Mock(is_encrypted=False, attachments={}, pages=[Mock()])
+                    if stage == "decrypt":
+                        reader.is_encrypted = True
+                        reader.decrypt.side_effect = failure
+                    elif stage in {"attachments", "pages"}:
+                        setattr(type(reader), stage, PropertyMock(side_effect=failure))
+                    elif stage == "attachment_items":
+                        reader.attachments = Mock()
+                        reader.attachments.items.side_effect = failure
+                    elif stage == "text":
+                        reader.pages[0].extract_text.side_effect = failure
+                    with patch("app.parsers.pdf_parser.PdfReader", return_value=reader) as constructor, \
+                            patch("app.parsers.pdf_parser.ocr_pdf") as ocr:
+                        if stage == "reader":
+                            constructor.side_effect = failure
+                        expected_type = ValueError if isinstance(failure, (PdfReadError, ParseError)) else exception_type
+                        with self.assertRaises(expected_type) as error:
+                            parse_pdf("invoice.pdf")
+                    if expected_type is ValueError:
+                        self.assertIs(error.exception.__cause__, failure)
+                    else:
+                        self.assertIs(error.exception, failure)
+                    ocr.assert_not_called()
+
+    def test_encrypted_embedded_xml_priority_and_cleanup(self):
+        path = Path(self.temporary_directory.name) / "embedded.pdf"
+        for name in ("factur-x.xml", "zugferd-invoice.xml", "xrechnung.xml"):
+            with self.subTest(name=name):
+                writer = PdfWriter()
+                writer.add_blank_page(width=595, height=842)
+                writer.add_attachment("other.xml", b"other")
+                writer.add_attachment(name, b"invoice")
+                writer.encrypt("", owner_password="owner-secret")
+                with path.open("wb") as handle:
+                    writer.write(handle)
+                temporary_paths = []
+
+                def parse_xml(temporary_path):
+                    temporary_paths.append(Path(temporary_path))
+                    self.assertEqual(Path(temporary_path).read_bytes(), b"invoice")
+                    return {"format": "CII", "invoice_number": "XML-001"}
+
+                with patch("app.parsers.pdf_parser.parse_xml_invoice", side_effect=parse_xml), \
+                        patch("app.parsers.pdf_parser.ocr_pdf") as ocr:
+                    result = parse_pdf(path)
+                self.assertEqual(result["format"], "FACTUR_X")
+                self.assertEqual(result["embedded_xml_name"], name)
+                self.assertEqual(result["invoice_number"], "XML-001")
+                self.assertEqual(len(temporary_paths), 1)
+                self.assertFalse(temporary_paths[0].exists())
+                ocr.assert_not_called()
+
+    def test_xml_failure_fallback_and_cleanup_are_preserved(self):
+        path = self._synthetic_pdf(self.temporary_directory.name)
+        for failure in (ValueError("invalid XML"), OSError("unreadable XML"), RuntimeError("bug")):
+            with self.subTest(failure=failure):
+                reader = PdfReader(str(path))
+                temporary_paths = []
+
+                def parse_xml(temporary_path):
+                    temporary_paths.append(Path(temporary_path))
+                    raise failure
+
+                with patch("app.parsers.pdf_parser.PdfReader", return_value=reader), \
+                        patch.object(PdfReader, "attachments", new_callable=PropertyMock,
+                                     return_value={"factur-x.xml": [b"invalid"]}), \
+                        patch("app.parsers.pdf_parser.parse_xml_invoice", side_effect=parse_xml):
+                    if isinstance(failure, RuntimeError):
+                        with self.assertRaises(RuntimeError) as error:
+                            parse_pdf(path)
+                        self.assertIs(error.exception, failure)
+                    else:
+                        self.assertEqual(parse_pdf(path)["format"], "PDF_TEXT")
+                self.assertEqual(len(temporary_paths), 1)
+                self.assertFalse(temporary_paths[0].exists())
 
     def test_vat_legal_reference_is_never_an_amount(self):
         result = _parse_text(SYNTHETIC_INVOICE, company={})
