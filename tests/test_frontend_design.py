@@ -12,6 +12,7 @@ class FrontendDesignTests(unittest.TestCase):
     def test_authenticated_pages_share_the_application_shell(self):
         pages = {
             "dashboard.html", "invoice_list.html", "invoice_detail.html",
+            "work_queue.html",
             "document_detail.html", "bank.html", "payments.html",
             "accounting_exports.html", "emails.html", "company.html",
             "supplier_banks.html", "ocr_settings.html",
@@ -29,7 +30,7 @@ class FrontendDesignTests(unittest.TestCase):
     def test_primary_navigation_uses_only_existing_routes(self):
         source = (TEMPLATES / "base.html").read_text(encoding="utf-8")
         for route in (
-            '/', '/invoices', '/emails', '/payments', '/bank',
+            '/', '/work', '/invoices', '/emails', '/payments', '/bank',
             '/exports/accounting', '/settings/company',
             '/settings/supplier-banks', '/settings/ocr', '/logout',
         ):
@@ -39,7 +40,7 @@ class FrontendDesignTests(unittest.TestCase):
     def test_primary_navigation_uses_clear_customer_labels(self):
         source = (TEMPLATES / "base.html").read_text(encoding="utf-8")
         for label in (
-            "Tableau de bord", "Factures", "Rapprochements", "Banque",
+            "Tableau de bord", "À traiter", "Factures", "Rapprochements", "Banque",
             "Échéances", "Exports", "Entreprise", "Paramètres",
         ):
             self.assertIn(f"<span>{label}</span>", source)
@@ -74,6 +75,19 @@ class FrontendDesignTests(unittest.TestCase):
             source = (TEMPLATES / name).read_text(encoding="utf-8")
             self.assertIn('data-theme="aurelia-dark"', source)
             self.assertIn('name="color-scheme" content="dark"', source)
+
+    def test_core_ux_copy_and_primary_actions_are_explicit(self):
+        setup = (TEMPLATES / "setup.html").read_text(encoding="utf-8")
+        dashboard = (TEMPLATES / "dashboard.html").read_text(encoding="utf-8")
+        invoice = (TEMPLATES / "invoice_detail.html").read_text(encoding="utf-8")
+        self.assertIn("Aurélia transforme vos documents en données comptables prêtes à valider", setup)
+        self.assertIn("Importer</li>", setup)
+        self.assertIn("Configurer Aurélia", setup)
+        self.assertEqual(dashboard.count(">Importer un document<"), 1)
+        self.assertIn("À traiter aujourd’hui", dashboard)
+        self.assertIn('class="invoice-decision-bar"', invoice)
+        for action in ("Valider", "Corriger", "Rejeter"):
+            self.assertIn(f">{action}</a>", invoice)
 
 
 if __name__ == "__main__":

@@ -34,7 +34,7 @@ from app.services.company import get_active_company,save_active_company
 from app.services.ocr import configure_tesseract,ocr_status
 from app.services.email_import import import_eml
 from app.services.supplier_banks import accept_supplier_bank_account,list_supplier_bank_accounts,reject_supplier_bank_account
-from app.services.invoice_review import dashboard_data,get_document_detail,get_invoice_detail,list_invoices
+from app.services.invoice_review import dashboard_data,get_document_detail,get_invoice_detail,list_invoices,work_queue_data
 from app.connectors.gmail_oauth import import_attachments
 from app.connectors.bank_csv import bank_overview,import_bank_csv,propose_matches
 from app.connectors.accounting import export_ebp_csv
@@ -176,6 +176,12 @@ def invoices_page(request:Request,status:str="",direction:str="",supplier:str=""
     invoices,suppliers=list_invoices(filters)
     return templates.TemplateResponse(request,"invoice_list.html",{
         "user":u,"invoices":invoices,"suppliers":suppliers,"filters":filters})
+
+@app.get("/work",response_class=HTMLResponse)
+def work_queue_page(request:Request):
+    u=require(request);groups=work_queue_data()
+    return templates.TemplateResponse(request,"work_queue.html",{
+        "user":u,"groups":groups,"total":sum(len(items) for items in groups.values())})
 
 @app.get("/invoices/{invoice_id}",response_class=HTMLResponse)
 def invoice_detail_page(request:Request,invoice_id:int,message:str="",error:str=""):

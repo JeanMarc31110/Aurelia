@@ -157,9 +157,23 @@ class Phase2InterfaceTests(unittest.TestCase):
         self.assertRegex(response.headers["location"], r"^/invoices/\d+$")
         page = self.session.get(self.base_url + response.headers["location"], timeout=5)
         self.assertEqual(page.status_code, 200)
-        self.assertIn(number, page.text)
-        self.assertIn("Contrôles Aurelia", page.text)
+        self.assertIn(number.upper(), page.text)
+        self.assertIn("Alertes et contrôles", page.text)
         self.assertNotIn("raw_json", page.text)
+
+    def test_work_queue_uses_real_invoice_state_and_links_to_review(self):
+        invoice_id = self.seed_invoice(status="REVIEW_REQUIRED", number="WORK-QUEUE-001")
+        page = self.session.get(f"{self.base_url}/work", timeout=5)
+        self.assertEqual(page.status_code, 200)
+        self.assertIn("Tout ce qui nécessite votre attention", page.text)
+        self.assertIn("WORK-QUEUE-001", page.text)
+        self.assertIn(f'href="/invoices/{invoice_id}"', page.text)
+        self.assertIn("À vérifier", page.text)
+
+        detail = self.session.get(f"{self.base_url}/invoices/{invoice_id}", timeout=5)
+        self.assertEqual(detail.status_code, 200)
+        self.assertIn('class="invoice-decision-bar"', detail.text)
+        self.assertLess(detail.text.index("Valider"), detail.text.index("Informations principales"))
 
     def test_validation_correction_rejection_and_history(self):
         approved_id = self.seed_invoice()

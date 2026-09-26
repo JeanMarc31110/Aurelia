@@ -1,9 +1,21 @@
 {% extends "auth_base.html" %}
 {% block title %}Bienvenue dans Aurelia{% endblock %}
 {% block shell_class %}setup-shell{% endblock %}
-{% block brand_message %}<h2>Bienvenue dans Aurelia</h2><p>Configurez votre environnement local.</p><div class="setup-steps"><div class="setup-step active"><span>1</span>Administrateur</div><div class="setup-step active"><span>2</span>Entreprise</div><div class="setup-step"><span>3</span>Terminé</div></div>{% endblock %}
+{% block brand_message %}<h2>Aurelia propose · vous décidez</h2><p>Un environnement de travail local pour préparer vos documents comptables avec contrôle humain.</p>{% endblock %}
 {% block content %}
-<p class="eyebrow">Première installation</p><h1>Créer votre espace</h1><p class="muted">Votre compte et votre entreprise restent sur ce PC.</p>
+<div class="setup-value">
+  <p class="eyebrow">Première installation</p>
+  <h1>Aurélia transforme vos documents en données comptables prêtes à valider</h1>
+  <p class="setup-lead">Importez vos documents, Aurélia extrait les informations utiles et prépare la suite. Vous gardez toujours le contrôle avant validation.</p>
+  <ol class="setup-process" aria-label="Fonctionnement d’Aurélia">
+    <li><span>1</span>Importer</li><li><span>2</span>Vérifier</li><li><span>3</span>Valider</li><li><span>4</span>Exporter</li>
+  </ol>
+</div>
+<div class="setup-form-intro"><h2>Configurer votre espace local</h2><p class="muted">Votre compte, votre entreprise et vos documents restent sur ce PC.</p></div>
 {% if error %}<div class="notice error">{{error}}</div>{% endif %}
-<form method="post" action="/setup"><h2>Administrateur</h2><div class="setup-admin-grid section-gap"><label>Nom d’utilisateur *<input name="username" required autocomplete="username" value="{{values.username or ''}}"></label><label>Mot de passe *<input type="password" name="password" required minlength="8" autocomplete="new-password"><span class="small subtle">8 caractères minimum.</span></label><label>Confirmation *<input type="password" name="password_confirmation" required minlength="8" autocomplete="new-password"></label></div><div class="divider"></div><h2>Entreprise</h2><div class="setup-company-grid section-gap"><label>Raison sociale *<input name="legal_name" required value="{{values.legal_name or ''}}"></label><label>Identifiant fiscal *<input name="tax_id" required value="{{values.tax_id or ''}}"></label><label>Pays *<input name="country" required value="{{values.country or ''}}"></label><label>Devise *<input name="currency" required value="{{values.currency or 'EUR'}}"></label></div><button class="btn" type="submit">Créer mon environnement Aurelia</button></form>
+<form method="post" action="/setup">
+  <fieldset><legend>Administrateur</legend><div class="setup-admin-grid section-gap"><label>Nom d’utilisateur *<input name="username" required autocomplete="username" value="{{values.username or ''}}"></label><label>Mot de passe *<input type="password" name="password" required minlength="8" autocomplete="new-password"><span class="small subtle">8 caractères minimum.</span></label><label>Confirmation *<input type="password" name="password_confirmation" required minlength="8" autocomplete="new-password"></label></div></fieldset>
+  <fieldset><legend>Entreprise</legend><div class="setup-company-grid section-gap"><label>Raison sociale *<input name="legal_name" required value="{{values.legal_name or ''}}"></label><label>Identifiant fiscal *<input name="tax_id" required value="{{values.tax_id or ''}}"></label><label>Pays *<input name="country" required value="{{values.country or ''}}"></label><label>Devise *<input name="currency" required value="{{values.currency or 'EUR'}}"></label></div></fieldset>
+  <button class="btn" type="submit">Configurer Aurélia</button>
+</form>
 {% endblock %}

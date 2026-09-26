@@ -168,6 +168,35 @@ def dashboard_data():
     return result
 
 
+def work_queue_data():
+    invoices, _ = list_invoices({})
+    groups = {"to_review": [], "anomalies": [], "to_validate": [], "blocked": []}
+    for invoice in invoices:
+        status = invoice.get("status")
+        if status not in {"REVIEW_REQUIRED", "VALIDATED", "DUPLICATE"}:
+            continue
+        raw = _json(invoice.get("raw_json"), {})
+        invoice["confidence_display"] = confidence(raw.get("structured_extraction_confidence"))
+        document_risk = invoice.get("document_risk_score") or 0
+        fraud_risk = invoice.get("fraud_risk_score") or 0
+        if status == "DUPLICATE":
+            invoice["attention_reason"] = "Doublon potentiel à contrôler"
+            groups["blocked"].append(invoice)
+        elif status == "VALIDATED":
+            invoice["attention_reason"] = "Contrôles terminés, décision humaine attendue"
+            groups["to_validate"].append(invoice)
+        elif document_risk or fraud_risk:
+            invoice["attention_reason"] = (
+                "Alerte fraude ou RIB à examiner" if fraud_risk else
+                "Anomalie documentaire à examiner"
+            )
+            groups["anomalies"].append(invoice)
+        else:
+            invoice["attention_reason"] = "Données extraites à vérifier"
+            groups["to_review"].append(invoice)
+    return groups
+
+
 def list_invoices(filters):
     clauses = []
     parameters = []
