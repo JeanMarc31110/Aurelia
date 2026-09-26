@@ -68,6 +68,7 @@ class LocalConfig:
     backups_enabled: bool
     backup_interval_seconds: float
     backup_retention: int
+    complete_backup_retention: int
 
     @property
     def session_secret_path(self):
@@ -109,6 +110,7 @@ def load_local_config(program_dir=None):
         backups_enabled=_bool_from_env("AURELIA_BACKUPS_ENABLED", True),
         backup_interval_seconds=_float_from_env("AURELIA_BACKUP_INTERVAL_HOURS", 24.0, 0.01) * 3600,
         backup_retention=_int_from_env("AURELIA_BACKUP_RETENTION", 14, 1),
+        complete_backup_retention=_int_from_env("AURELIA_COMPLETE_BACKUP_RETENTION", 5, 1),
     )
 
 

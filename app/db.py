@@ -21,9 +21,10 @@ def _execute_script_transactionally(con, script):
         if statement.strip():
             con.execute(statement)
 
-def connect():
-    Path(DB_PATH).parent.mkdir(parents=True,exist_ok=True)
-    con=sqlite3.connect(DB_PATH,timeout=10)
+def connect(path=None):
+    database_path=Path(path or DB_PATH)
+    database_path.parent.mkdir(parents=True,exist_ok=True)
+    con=sqlite3.connect(database_path,timeout=10)
     con.row_factory=sqlite3.Row
     con.execute("PRAGMA foreign_keys=ON")
     con.execute("PRAGMA busy_timeout=5000")
@@ -433,8 +434,8 @@ def _is_fresh_database(con):
     ).fetchone() is None
 
 
-def init_db():
-    con=connect()
+def init_db(path=None):
+    con=connect(path)
     try:
         version=int(con.execute("PRAGMA user_version").fetchone()[0])
         if version>CURRENT_SCHEMA_VERSION:
