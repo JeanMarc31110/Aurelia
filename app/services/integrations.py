@@ -4,8 +4,8 @@ from app.connectors.accounting import PennylaneConnector,SageConnector,CegidConn
 from app.connectors.platform_adapter import ApprovedPlatformConnector
 
 def status():
-    local=load_local_config().data_dir
-    gmail_credentials=os.getenv("GMAIL_CREDENTIALS_FILE",str(local/"config"/"google_client_secret.json"))
+    local=load_local_config()
+    gmail_credentials=os.getenv("GMAIL_CREDENTIALS_FILE",str(local.config_dir/"google_client_secret.json"))
     return {
       "gmail":{"credentials_file":gmail_credentials,"configured":os.path.exists(gmail_credentials)},
       "pennylane":{"configured":PennylaneConnector.from_env().configured()},

@@ -13,6 +13,7 @@ from app.local_config import ensure_local_directories, load_local_config
 from app.resource_paths import program_directory
 from app.services.data_migration import migrate_legacy_database
 from app.services.local_logging import configure_local_logging
+from app.services.runtime_migration import migrate_legacy_runtime_data
 
 
 HOST = "127.0.0.1"
@@ -82,6 +83,7 @@ def main():
             show_message("Le port 8000 est déjà utilisé par un autre logiciel.", error=True)
             logger.error("port_8000_used_by_other_application")
             return 3
+        migrate_legacy_runtime_data(config)
         migration = migrate_legacy_database(config)
         logger.info("data_migration_status=%s", migration["status"])
         if browser_enabled():

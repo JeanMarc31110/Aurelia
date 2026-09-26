@@ -13,12 +13,16 @@ load_dotenv()
 from app.local_config import ensure_local_directories,load_local_config
 from app.resource_paths import program_directory,resource_path
 from app.services.data_migration import migrate_legacy_database
+from app.services.local_logging import configure_local_logging
+from app.services.runtime_migration import migrate_legacy_runtime_data
 from app.services.session_secret import get_or_create_session_secret
 from app.version import APP_VERSION
 
 BASE=program_directory()
 LOCAL_CONFIG=load_local_config(BASE)
 ensure_local_directories(LOCAL_CONFIG)
+configure_local_logging(LOCAL_CONFIG)
+migrate_legacy_runtime_data(LOCAL_CONFIG)
 migrate_legacy_database(LOCAL_CONFIG)
 
 from app.db import init_db,connect
@@ -44,7 +48,7 @@ from app.services.accounting_exports import (accounting_config,create_accounting
     export_preview,save_accounting_config)
 from app.services.folder_watcher import FolderWatcher
 from app.services.local_ingestion import unique_destination
-from app.services.local_logging import close_local_logging,configure_local_logging
+from app.services.local_logging import close_local_logging
 from app.services.onboarding import create_initial_setup
 from app.services.sqlite_backups import BackupScheduler,backup_if_due
 

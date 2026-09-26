@@ -23,7 +23,7 @@ def import_eml(path, username="system", destination=None):
         "source_subject": str(message.get("Subject") or ""),
         "source_date": str(message.get("Date") or ""),
     }
-    destination = Path(destination or (load_local_config().data_dir / "email_attachments"))
+    destination = Path(destination or load_local_config().email_attachments_dir)
     destination.mkdir(parents=True, exist_ok=True)
     results = []
     for part in message.iter_attachments():

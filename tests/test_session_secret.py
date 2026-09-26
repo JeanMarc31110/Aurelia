@@ -64,20 +64,24 @@ class SessionSecretTests(unittest.TestCase):
 
     def test_default_production_path_is_localappdata(self):
         local_app_data = self.root / "LocalAppData"
-        with patch.dict(os.environ, {"LOCALAPPDATA": str(local_app_data)}, clear=False):
+        with patch.dict(os.environ, {
+            "LOCALAPPDATA": str(local_app_data), "USERPROFILE": str(self.root / "Profile")
+        }, clear=False):
             os.environ.pop("AURELIA_DATA_DIR", None)
             os.environ.pop("AURELIA_DB_PATH", None)
             config = load_local_config(self.root / "program")
         self.assertEqual(
             config.session_secret_path,
-            (local_app_data / "Aurelia" / "session.secret").resolve(),
+            (local_app_data / "Aurelia" / "Secrets" / "session.secret").resolve(),
         )
 
     def test_pyinstaller_runtime_uses_localappdata_secret(self):
         local_app_data = self.root / "FrozenLocalAppData"
         executable = self.root / "installed" / "Aurelia.exe"
         executable.parent.mkdir(parents=True)
-        with patch.dict(os.environ, {"LOCALAPPDATA": str(local_app_data)}, clear=False), \
+        with patch.dict(os.environ, {
+                "LOCALAPPDATA": str(local_app_data), "USERPROFILE": str(self.root / "FrozenProfile")
+            }, clear=False), \
                 patch.object(sys, "frozen", True, create=True), \
                 patch.object(sys, "executable", str(executable)):
             os.environ.pop("AURELIA_DATA_DIR", None)
@@ -85,7 +89,7 @@ class SessionSecretTests(unittest.TestCase):
             config = load_local_config(executable.parent)
             secret = get_or_create_session_secret(config)
         self.assertTrue(config.session_secret_path.is_file())
-        self.assertEqual(config.session_secret_path.parent, (local_app_data / "Aurelia").resolve())
+        self.assertEqual(config.session_secret_path.parent, (local_app_data / "Aurelia" / "Secrets").resolve())
         self.assertEqual(config.session_secret_path.read_text(encoding="ascii"), secret)
 
     def test_secret_value_is_never_logged(self):

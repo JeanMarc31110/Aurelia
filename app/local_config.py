@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from app.resource_paths import program_directory
+from app.runtime_paths import resolve_runtime_paths
 
 PROGRAM_DIR = program_directory()
 
@@ -12,17 +13,15 @@ def _legacy_database_path(program_dir):
     explicit = os.getenv("AURELIA_LEGACY_DB_PATH", "").strip()
     if explicit:
         return Path(explicit).expanduser().resolve()
+    isolated_runtime = os.getenv("AURELIA_RUNTIME_ROOT", "").strip()
+    if isolated_runtime:
+        return (Path(isolated_runtime).expanduser().resolve() / "legacy" / "aurelia_v5.db")
     candidates = [program_dir / "data" / "aurelia_v5.db"]
     # A repository build lives in <project>/dist/Aurelia.  Supporting this
     # layout lets the first packaged launch migrate the Phase 4 database.
     if program_dir.parent.name.lower() == "dist":
         candidates.append(program_dir.parent.parent / "data" / "aurelia_v5.db")
     return next((path for path in candidates if path.is_file()), candidates[0])
-
-
-def _path_from_env(name, default):
-    value = os.getenv(name, "").strip()
-    return Path(value).expanduser().resolve() if value else Path(default).expanduser().resolve()
 
 
 def _bool_from_env(name, default=True):
@@ -45,6 +44,9 @@ def _int_from_env(name, default, minimum):
 class LocalConfig:
     program_dir: Path
     data_dir: Path
+    internal_data_dir: Path
+    config_dir: Path
+    secrets_dir: Path
     documents_dir: Path
     inbox_dir: Path
     processed_dir: Path
@@ -54,6 +56,8 @@ class LocalConfig:
     backups_dir: Path
     logs_dir: Path
     uploads_dir: Path
+    email_attachments_dir: Path
+    generated_documents_dir: Path
     sqlite_path: Path
     log_path: Path
     legacy_data_layout: bool
@@ -67,7 +71,7 @@ class LocalConfig:
 
     @property
     def session_secret_path(self):
-        return self.data_dir / "session.secret"
+        return self.secrets_dir / "session.secret"
 
     @property
     def legacy_sqlite_path(self):
@@ -75,37 +79,28 @@ class LocalConfig:
 
     def required_directories(self):
         return (
-            self.data_dir, self.documents_dir, self.inbox_dir, self.processed_dir,
+            self.data_dir, self.internal_data_dir, self.config_dir, self.secrets_dir,
+            self.documents_dir, self.inbox_dir, self.processed_dir,
             self.errors_dir, self.archive_dir, self.exports_dir, self.backups_dir,
-            self.logs_dir, self.uploads_dir, self.sqlite_path.parent,
+            self.logs_dir, self.uploads_dir, self.email_attachments_dir,
+            self.generated_documents_dir, self.sqlite_path.parent,
         )
 
 
 def load_local_config(program_dir=None):
     program_dir = Path(program_dir or PROGRAM_DIR).resolve()
-    explicit_data = os.getenv("AURELIA_DATA_DIR", "").strip()
-    if explicit_data:
-        data_dir = _path_from_env("AURELIA_DATA_DIR", explicit_data)
-    else:
-        local_app_data = Path(os.getenv("LOCALAPPDATA") or (Path.home() / ".local" / "share"))
-        data_dir = (local_app_data / "Aurelia").resolve()
-
-    user_documents = Path(os.getenv("USERPROFILE") or Path.home()) / "Documents" / "Aurelia"
-    documents_dir = _path_from_env("AURELIA_DOCUMENTS_DIR", user_documents)
-    inbox = _path_from_env("AURELIA_INBOX_DIR", documents_dir / "Inbox")
-    processed = _path_from_env("AURELIA_PROCESSED_DIR", documents_dir / "Processed")
-    errors = _path_from_env("AURELIA_ERRORS_DIR", documents_dir / "Errors")
-    archive = _path_from_env("AURELIA_ARCHIVE_DIR", documents_dir / "Archive")
-    exports = _path_from_env("AURELIA_EXPORTS_PATH", documents_dir / "Exports")
-    backups = _path_from_env("AURELIA_BACKUPS_DIR", documents_dir / "Backups")
-    uploads = _path_from_env("AURELIA_UPLOADS_PATH", data_dir / "uploads")
-    sqlite_path = _path_from_env("AURELIA_DB_PATH", data_dir / "aurelia_v5.db")
-    logs = _path_from_env("AURELIA_LOGS_DIR", data_dir / "logs")
+    paths = resolve_runtime_paths(program_dir)
     return LocalConfig(
-        program_dir=program_dir, data_dir=data_dir, documents_dir=documents_dir,
-        inbox_dir=inbox, processed_dir=processed, errors_dir=errors, archive_dir=archive,
-        exports_dir=exports, backups_dir=backups, logs_dir=logs, uploads_dir=uploads,
-        sqlite_path=sqlite_path, log_path=logs / "aurelia.log",
+        program_dir=program_dir, data_dir=paths.state_root,
+        internal_data_dir=paths.data_root, config_dir=paths.config_root,
+        secrets_dir=paths.secret_root, documents_dir=paths.documents_root,
+        inbox_dir=paths.inbox_root, processed_dir=paths.processed_root,
+        errors_dir=paths.error_root, archive_dir=paths.archive_root,
+        exports_dir=paths.export_root, backups_dir=paths.backup_root,
+        logs_dir=paths.log_root, uploads_dir=paths.upload_root,
+        email_attachments_dir=paths.email_attachment_root,
+        generated_documents_dir=paths.generated_document_root,
+        sqlite_path=paths.sqlite_path, log_path=paths.log_root / "aurelia.log",
         legacy_data_layout=_legacy_database_path(program_dir).is_file(),
         watcher_enabled=_bool_from_env("AURELIA_WATCHER_ENABLED", True),
         watcher_poll_seconds=_float_from_env("AURELIA_WATCHER_POLL_SECONDS", 1.0, 0.05),

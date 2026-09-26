@@ -5,6 +5,21 @@ from app.local_config import load_local_config
 
 BASE=Path(__file__).resolve().parents[1]
 DB_PATH=load_local_config(BASE).sqlite_path
+CURRENT_SCHEMA_VERSION=1
+
+
+class SchemaVersionError(RuntimeError):
+    pass
+
+
+class SchemaMigrationError(RuntimeError):
+    pass
+
+
+def _execute_script_transactionally(con, script):
+    for statement in script.split(";"):
+        if statement.strip():
+            con.execute(statement)
 
 def connect():
     Path(DB_PATH).parent.mkdir(parents=True,exist_ok=True)
@@ -14,9 +29,8 @@ def connect():
     con.execute("PRAGMA busy_timeout=5000")
     return con
 
-def init_db():
-    con=connect()
-    con.executescript("""
+def _ensure_current_schema(con):
+    _execute_script_transactionally(con,"""
     CREATE TABLE IF NOT EXISTS users(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       username TEXT UNIQUE NOT NULL,
@@ -404,4 +418,52 @@ def init_db():
     con.execute("CREATE INDEX IF NOT EXISTS idx_payment_matches_invoice ON payment_matches(invoice_id,cancelled_at)")
     con.execute("CREATE INDEX IF NOT EXISTS idx_export_items_invoice ON accounting_export_items(invoice_id)")
     con.execute("CREATE INDEX IF NOT EXISTS idx_ingested_files_status ON ingested_files(status,updated_at)")
-    con.commit(); con.close()
+
+
+def _migrate_0_to_1(con):
+    _ensure_current_schema(con)
+
+
+MIGRATIONS={0:_migrate_0_to_1}
+
+
+def _is_fresh_database(con):
+    return con.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' LIMIT 1"
+    ).fetchone() is None
+
+
+def init_db():
+    con=connect()
+    try:
+        version=int(con.execute("PRAGMA user_version").fetchone()[0])
+        if version>CURRENT_SCHEMA_VERSION:
+            raise SchemaVersionError(
+                f"Base Aurelia plus récente que l'application: schema {version}, "
+                f"maximum supporté {CURRENT_SCHEMA_VERSION}"
+            )
+        if version==CURRENT_SCHEMA_VERSION:
+            return
+        fresh=_is_fresh_database(con)
+        con.execute("BEGIN IMMEDIATE")
+        if fresh:
+            _ensure_current_schema(con)
+            con.execute(f"PRAGMA user_version={CURRENT_SCHEMA_VERSION}")
+        else:
+            while version<CURRENT_SCHEMA_VERSION:
+                migration=MIGRATIONS.get(version)
+                if migration is None:
+                    raise SchemaMigrationError(f"Migration de schéma absente depuis la version {version}")
+                migration(con)
+                version+=1
+                con.execute(f"PRAGMA user_version={version}")
+        con.commit()
+    except SchemaVersionError:
+        raise
+    except Exception as exc:
+        con.rollback()
+        if isinstance(exc,SchemaMigrationError):
+            raise
+        raise SchemaMigrationError("Échec de la migration du schéma Aurelia") from exc
+    finally:
+        con.close()
