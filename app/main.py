@@ -262,6 +262,11 @@ def company_page(request:Request,saved:int=0):
     return templates.TemplateResponse(request,"company.html",{
         "user":u,"company":company,"saved":bool(saved),"error":None})
 
+@app.get("/settings",response_class=HTMLResponse)
+def settings_page(request:Request):
+    u=require_admin(request)
+    return templates.TemplateResponse(request,"settings.html",{"user":u})
+
 @app.post("/settings/company")
 def company_save(
     request:Request,legal_name:str=Form(...),trade_name:str=Form(""),country:str=Form(""),
@@ -401,13 +406,31 @@ def payments_page(request:Request,message:str="",error:str=""):
     return templates.TemplateResponse(request,"payments.html",{
         "user":u,"overview":payment_overview(),"message":message,"error":error})
 
+@app.get("/integrations",response_class=HTMLResponse)
+def integrations_page(request:Request):
+    u=require(request)
+    return templates.TemplateResponse(request,"integrations.html",{
+        "user":u,"integrations":integrations_status()})
+
 @app.get("/exports/accounting",response_class=HTMLResponse)
 def accounting_exports_page(request:Request,date_from:str="",date_to:str="",direction:str="",
                             payment:str="",exported:str="not_exported",message:str="",error:str=""):
     u=require(request);filters={"date_from":date_from,"date_to":date_to,"direction":direction,
                                 "payment":payment,"exported":exported}
+    preview=export_preview(filters)
+    config_help={
+        "journal_purchase":("Journal d’achat","Utilisé pour enregistrer les factures fournisseurs."),
+        "journal_sale":("Journal de ventes","Utilisé pour enregistrer les factures clients."),
+        "account_supplier":("Compte fournisseurs","Compte collectif des fournisseurs."),
+        "account_customer":("Compte clients","Compte collectif des clients."),
+        "account_vat_deductible":("Compte TVA déductible","Compte utilisé pour la TVA sur les achats."),
+        "account_vat_collected":("Compte TVA collectée","Compte utilisé pour la TVA sur les ventes."),
+    }
+    missing_config=[{"key":key,"label":label,"help":help_text}
+                    for key,(label,help_text) in config_help.items() if not preview["config"].get(key)]
     return templates.TemplateResponse(request,"accounting_exports.html",{
-        "user":u,"preview":export_preview(filters),"filters":filters,"message":message,"error":error})
+        "user":u,"preview":preview,"filters":filters,"message":message,"error":error,
+        "config_help":config_help,"missing_config":missing_config})
 
 @app.post("/exports/accounting/config")
 def accounting_config_save(request:Request,journal_purchase:str=Form(""),journal_sale:str=Form(""),

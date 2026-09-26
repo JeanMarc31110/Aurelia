@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% set active_page='settings' %}
+{% block title %}Paramètres — Aurelia{% endblock %}{% block page_name %}Paramètres{% endblock %}
+{% block content %}
+<header class="page-header"><div class="page-header-copy"><p class="eyebrow">Configuration locale</p><h1>Paramètres</h1><p class="page-subtitle">Retrouvez les réglages par usage. Les options techniques restent regroupées dans la section avancée.</p></div></header>
+<div class="settings-grid">
+  <section class="card settings-card"><p class="eyebrow">Entreprise</p><h2>Identité et coordonnées</h2><p>Raison sociale, contacts, informations fiscales et coordonnées bancaires de votre entreprise.</p><a class="btn btn-secondary" href="/settings/company">Gérer l’entreprise</a></section>
+  <section class="card settings-card"><p class="eyebrow">Sources / documents</p><h2>Imports et connexions</h2><p>Accédez aux sources e-mail et aux intégrations réellement disponibles.</p><a class="btn btn-secondary" href="/integrations">Gérer les intégrations</a></section>
+  <section class="card settings-card"><p class="eyebrow">Fournisseurs / banque</p><h2>RIB fournisseurs</h2><p>Contrôlez les coordonnées bancaires détectées et confirmez les changements autorisés.</p><a class="btn btn-secondary" href="/settings/supplier-banks">Gérer les RIB fournisseurs</a></section>
+  <section class="card settings-card"><p class="eyebrow">Avancé</p><h2>OCR et lecture locale</h2><p>Configurez Tesseract, les chemins locaux et les langues de reconnaissance.</p><a class="btn btn-secondary" href="/settings/ocr">Ouvrir les réglages OCR</a></section>
+</div>
+{% endblock %}

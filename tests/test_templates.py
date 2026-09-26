@@ -1,4 +1,5 @@
 import os
+import re
 import sqlite3
 import socket
 import subprocess
@@ -182,19 +183,26 @@ class TemplateCompatibilityTests(unittest.TestCase):
         self.assertIn("Déconnexion", dashboard.text)
         self.assertIn("Aucune société active n’est configurée", dashboard.text)
 
-        for path, marker in (("/bank", "Importer un relevé CSV"),
+        for path, marker in (("/bank", "Importer des transactions bancaires"),
                              ("/payments", "Échéances et paiements"),
-                             ("/exports/accounting", "Export comptable EBP CSV"),
+                             ("/exports/accounting", "Comptabilité"),
+                             ("/integrations", "Import e-mail local"),
+                             ("/settings", "Configuration locale"),
                              ("/emails", "Importer un fichier .eml"),
-                             ("/settings/ocr", "Tesseract OCR"),
-                             ("/settings/supplier-banks", "Historique des coordonnées bancaires")):
+                             ("/settings/company", "Informations légales et coordonnées"),
+                             ("/settings/ocr", "Configuration technique locale"),
+                             ("/settings/supplier-banks", "Historique des coordonnées bancaires détectées")):
             with self.subTest(path=path):
                 page = self.session.get(f"{self.base_url}{path}", timeout=5)
                 self.assertEqual(page.status_code, 200)
                 self.assertIn(marker, page.text)
                 if path == "/exports/accounting":
-                    self.assertIn("Configuration requise pour permettre l’export comptable", page.text)
+                    self.assertIn("Avant le premier export", page.text)
                     self.assertIn("Format EBP CSV à valider", page.text)
+
+        dashboard = self.session.get(f"{self.base_url}/", timeout=5)
+        nav_labels = re.findall(r'<a class="nav-link[^>]*>.*?<span>(.*?)</span></a>', dashboard.text, re.S)
+        self.assertEqual(nav_labels, ["Accueil", "À traiter", "Banque", "Comptabilité", "Intégrations", "Paramètres"])
 
         logout = self.session.get(f"{self.base_url}/logout", timeout=5)
         self.assertEqual(logout.status_code, 200)

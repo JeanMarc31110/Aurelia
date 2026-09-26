@@ -15,7 +15,8 @@ class FrontendDesignTests(unittest.TestCase):
             "work_queue.html",
             "document_detail.html", "bank.html", "payments.html",
             "accounting_exports.html", "emails.html", "company.html",
-            "supplier_banks.html", "ocr_settings.html",
+            "supplier_banks.html", "ocr_settings.html", "integrations.html",
+            "settings.html",
         }
         for name in pages:
             source = (TEMPLATES / name).read_text(encoding="utf-8")
@@ -29,21 +30,30 @@ class FrontendDesignTests(unittest.TestCase):
 
     def test_primary_navigation_uses_only_existing_routes(self):
         source = (TEMPLATES / "base.html").read_text(encoding="utf-8")
-        for route in (
-            '/', '/work', '/invoices', '/emails', '/payments', '/bank',
-            '/exports/accounting', '/settings/company',
-            '/settings/supplier-banks', '/settings/ocr', '/logout',
-        ):
+        for route in ('/', '/work', '/bank', '/exports/accounting', '/integrations', '/settings', '/logout'):
             self.assertIn(f'href="{route}"', source)
         self.assertIn('aria-label="Navigation principale"', source)
 
     def test_primary_navigation_uses_clear_customer_labels(self):
         source = (TEMPLATES / "base.html").read_text(encoding="utf-8")
-        for label in (
-            "Tableau de bord", "À traiter", "Factures", "Rapprochements", "Banque",
-            "Échéances", "Exports", "Entreprise", "Paramètres",
-        ):
+        for label in ("Accueil", "À traiter", "Banque", "Comptabilité", "Intégrations", "Paramètres"):
             self.assertIn(f"<span>{label}</span>", source)
+        self.assertEqual(source.count('class="nav-link '), 6)
+        self.assertNotIn("<span>Rapprochements</span>", source)
+        self.assertNotIn('href="/settings/ocr"', source)
+        self.assertIn('aria-current="page"', source)
+
+    def test_secondary_workflows_keep_legacy_routes_behind_product_hubs(self):
+        settings = (TEMPLATES / "settings.html").read_text(encoding="utf-8")
+        integrations = (TEMPLATES / "integrations.html").read_text(encoding="utf-8")
+        bank = (TEMPLATES / "bank.html").read_text(encoding="utf-8")
+        accounting = (TEMPLATES / "accounting_exports.html").read_text(encoding="utf-8")
+        for route in ("/settings/company", "/settings/supplier-banks", "/settings/ocr"):
+            self.assertIn(f'href="{route}"', settings)
+        self.assertIn('href="/emails"', integrations)
+        self.assertIn('href="/payments"', bank)
+        self.assertIn('id="configuration"', accounting)
+        self.assertIn("missing_config", accounting)
 
     def test_business_statuses_are_centralized_and_translated(self):
         source = (TEMPLATES / "ui_macros.html").read_text(encoding="utf-8")

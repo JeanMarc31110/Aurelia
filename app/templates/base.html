@@ -18,16 +18,12 @@
 <div class="app-shell"><aside class="sidebar" aria-label="Navigation principale">
   <a href="/" class="brand" aria-label="Accueil Aurelia"><span class="aurelia-mark" aria-hidden="true"><span>A</span></span><span><span class="brand-name">AURELIA</span><span class="brand-version">Espace local</span></span></a>
   <nav class="sidebar-nav" aria-label="Sections Aurelia">
-    <a class="nav-link {{'active' if active_page=='dashboard' else ''}}" href="/"><svg class="nav-icon"><use href="#i-home"/></svg><span>Tableau de bord</span></a>
-    <a class="nav-link {{'active' if active_page=='work' else ''}}" href="/work"><svg class="nav-icon"><use href="#i-work"/></svg><span>À traiter</span></a>
-    <a class="nav-link {{'active' if active_page in ['invoices','invoice','document'] else ''}}" href="/invoices"><svg class="nav-icon"><use href="#i-file"/></svg><span>Factures</span></a>
-    <a class="nav-link {{'active' if active_page=='bank' else ''}}" href="/bank#reconciliations"><svg class="nav-icon"><use href="#i-link"/></svg><span>Rapprochements</span></a>
-    <a class="nav-link" href="/bank"><svg class="nav-icon"><use href="#i-bank"/></svg><span>Banque</span></a>
-    <a class="nav-link {{'active' if active_page=='payments' else ''}}" href="/payments"><svg class="nav-icon"><use href="#i-calendar"/></svg><span>Échéances</span></a>
-    <a class="nav-link {{'active' if active_page=='exports' else ''}}" href="/exports/accounting"><svg class="nav-icon"><use href="#i-export"/></svg><span>Exports</span></a>
-    <a class="nav-link {{'active' if active_page=='company' else ''}}" href="/settings/company"><svg class="nav-icon"><use href="#i-building"/></svg><span>Entreprise</span></a>
-    <a class="nav-link {{'active' if active_page in ['ocr','banks','emails'] else ''}}" href="/settings/ocr"><svg class="nav-icon"><use href="#i-settings"/></svg><span>Paramètres</span></a>
-    <details class="nav-tools"><summary>Outils locaux</summary><a href="/emails"><svg class="nav-icon"><use href="#i-mail"/></svg>Import e-mail</a><a href="/settings/supplier-banks"><svg class="nav-icon"><use href="#i-shield"/></svg>RIB fournisseurs</a><a href="/settings/ocr"><svg class="nav-icon"><use href="#i-scan"/></svg>Configuration OCR</a></details>
+    <a class="nav-link {{'active' if active_page=='dashboard' else ''}}" {% if active_page=='dashboard' %}aria-current="page"{% endif %} href="/"><svg class="nav-icon"><use href="#i-home"/></svg><span>Accueil</span></a>
+    <a class="nav-link {{'active' if active_page in ['work','invoices','invoice','document'] else ''}}" {% if active_page in ['work','invoices','invoice','document'] %}aria-current="page"{% endif %} href="/work"><svg class="nav-icon"><use href="#i-work"/></svg><span>À traiter</span></a>
+    <a class="nav-link {{'active' if active_page in ['bank','payments'] else ''}}" {% if active_page in ['bank','payments'] %}aria-current="page"{% endif %} href="/bank"><svg class="nav-icon"><use href="#i-bank"/></svg><span>Banque</span></a>
+    <a class="nav-link {{'active' if active_page=='exports' else ''}}" {% if active_page=='exports' %}aria-current="page"{% endif %} href="/exports/accounting"><svg class="nav-icon"><use href="#i-export"/></svg><span>Comptabilité</span></a>
+    <a class="nav-link {{'active' if active_page in ['integrations','emails'] else ''}}" {% if active_page in ['integrations','emails'] %}aria-current="page"{% endif %} href="/integrations"><svg class="nav-icon"><use href="#i-mail"/></svg><span>Intégrations</span></a>
+    <a class="nav-link {{'active' if active_page in ['settings','company','ocr','banks'] else ''}}" {% if active_page in ['settings','company','ocr','banks'] %}aria-current="page"{% endif %} href="/settings"><svg class="nav-icon"><use href="#i-settings"/></svg><span>Paramètres</span></a>
   </nav>
   <div class="sidebar-footnote"><span class="local-dot"></span><span>Système local</span></div>
   {% if user and user.role=='admin' %}<div class="sidebar-footer"><form method="post" action="/shutdown" class="shutdown-form"><button type="submit" class="shutdown-button">Quitter Aurelia</button></form></div>{% endif %}
