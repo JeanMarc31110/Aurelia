@@ -1,7 +1,7 @@
 {% macro status_label(code) -%}
 {%- set labels = {
   'UNPAID':'Impayée', 'PAID':'Payée', 'PARTIALLY_PAID':'Partiellement payée',
-  'APPROVED':'Validée', 'REJECTED':'Rejetée', 'REVIEW_REQUIRED':'À vérifier',
+  'APPROVED':'Validée', 'VALIDATED':'Prête à valider', 'REJECTED':'Rejetée', 'REVIEW_REQUIRED':'À vérifier',
   'PENDING':'En attente', 'DUPLICATE':'Doublon', 'ERROR':'Erreur',
   'PAYMENT_MISMATCH':'Écart de paiement', 'OVERDUE':'En retard',
   'IGNORED':'Ignorée', 'MATCHED':'Rapprochée', 'CANCELLED':'Annulée',

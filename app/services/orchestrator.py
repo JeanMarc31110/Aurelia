@@ -171,7 +171,7 @@ def process_invoice(invoice, username="system"):
     proposal = account_proposal(invoice)
     add("COMPTABILITE", "account", "warning",
         proposal["confidence"] >= POLICY["thresholds"]["accounting_confidence"],
-        f"Compte {proposal['account']} — confiance {proposal['confidence']:.0%}", 10)
+        f"Compte {proposal['account'] or 'non déterminé'} — confiance {proposal['confidence']:.0%}", 10)
 
     status = "DUPLICATE" if duplicate else ("REVIEW_REQUIRED" if any(not item["ok"] for item in findings) else "VALIDATED")
     legacy_risk = min(100, document_risk + fraud_risk)

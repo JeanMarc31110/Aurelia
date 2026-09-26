@@ -12,8 +12,8 @@
   </ol>
 </div>
 <div class="setup-form-intro"><h2>Configurer votre espace local</h2><p class="muted">Votre compte, votre entreprise et vos documents restent sur ce PC.</p></div>
-{% if error %}<div class="notice error">{{error}}</div>{% endif %}
-<form method="post" action="/setup">
+{% if error %}<div class="notice error" id="setup-error" role="alert">{{error}}</div>{% endif %}
+<form method="post" action="/setup"{% if error %} aria-describedby="setup-error"{% endif %}>
   <fieldset><legend>Administrateur</legend><div class="setup-admin-grid section-gap"><label>Nom d’utilisateur *<input name="username" required autocomplete="username" value="{{values.username or ''}}"></label><label>Mot de passe *<input type="password" name="password" required minlength="8" autocomplete="new-password"><span class="small subtle">8 caractères minimum.</span></label><label>Confirmation *<input type="password" name="password_confirmation" required minlength="8" autocomplete="new-password"></label></div></fieldset>
   <fieldset><legend>Entreprise</legend><div class="setup-company-grid section-gap"><label>Raison sociale *<input name="legal_name" required value="{{values.legal_name or ''}}"></label><label>Identifiant fiscal *<input name="tax_id" required value="{{values.tax_id or ''}}"></label><label>Pays *<input name="country" required value="{{values.country or ''}}"></label><label>Devise *<input name="currency" required value="{{values.currency or 'EUR'}}"></label></div></fieldset>
   <button class="btn" type="submit">Configurer Aurélia</button>

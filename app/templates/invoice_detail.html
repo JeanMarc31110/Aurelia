@@ -2,7 +2,7 @@
 {% block title %}Facture {{invoice.invoice_number or invoice.id}} — Aurelia{% endblock %}{% block page_name %}Documents · Validation facture{% endblock %}
 {% block content %}
 {% set priority_alert = invoice.findings|selectattr('ok','equalto',false)|list|first %}
-{% if message %}<div class="notice success"><div>{{message}}</div></div>{% endif %}{% if error %}<div class="notice error"><div>{{error}}</div></div>{% endif %}
+{% if message %}<div class="notice success" role="status" aria-live="polite"><div>{{message}}{% if invoice.status=='APPROVED' %} · <a href="/work">Retour à la file de travail</a>{% endif %}</div></div>{% endif %}{% if error %}<div class="notice error" role="alert"><div>{{error}}</div></div>{% endif %}
 <header class="card invoice-hero invoice-review-hero">
   <div><p class="eyebrow">{{ui.document_label(invoice.document_type)}}</p><h1>{{invoice.invoice_number or 'Numéro à compléter'}}</h1><p class="page-subtitle">{{invoice.supplier_name or invoice.customer_name or 'Tiers à identifier'}}</p><div class="invoice-hero-facts"><span>Date {{invoice.issue_date or 'à confirmer'}}</span><span>Échéance {{invoice.due_date or 'à confirmer'}}</span><span>Confiance <b>{{invoice.structured_confidence_display.label}}</b>{% if invoice.structured_confidence_display.percent is not none %} · {{invoice.structured_confidence_display.percent}} %{% endif %}</span></div>{% if invoice.rib_alert %}<p class="invoice-priority-alert critical">Changement de RIB détecté — vérification prioritaire</p>{% elif priority_alert %}<p class="invoice-priority-alert">{{priority_alert.message}}</p>{% else %}<p class="invoice-priority-ok">Aucune anomalie documentaire bloquante détectée.</p>{% endif %}</div>
   <div class="invoice-total"><span class="status status-large status-{{invoice.status|lower}}">{{ui.status_label(invoice.status)}}</span><span class="kpi-label">Montant TTC</span><strong>{{"%.2f"|format(invoice.gross_amount or 0)}} {{invoice.currency}}</strong><a class="btn btn-secondary btn-small" href="/work">Retour à la file</a></div>
@@ -21,7 +21,7 @@
   <fieldset><legend>Dates et montants</legend><div class="form-grid"><label>Date facture<input type="date" name="issue_date" value="{{invoice.issue_date or ''}}"></label><label>Échéance<input type="date" name="due_date" value="{{invoice.due_date or ''}}"></label><label>HT<input name="net_amount" value="{{invoice.net_amount or 0}}"></label><label>TVA<input name="vat_amount" value="{{invoice.vat_amount or 0}}"></label><label>TTC<input name="gross_amount" value="{{invoice.gross_amount or 0}}"></label></div></fieldset>
   <fieldset><legend>Lignes de facture</legend><label>Une ligne par ligne, au format : Description | Quantité | Prix unitaire | Total<textarea name="lines_text" rows="5">{{invoice.lines_text}}</textarea></label></fieldset>
   <fieldset><legend>Traçabilité</legend><label>Justification obligatoire<textarea name="justification" required rows="3"></textarea></label></fieldset>
-  <button class="btn">Enregistrer les corrections</button>
+  <div class="button-row"><button class="btn">Enregistrer les corrections</button><button class="btn btn-secondary" type="reset">Annuler les modifications</button></div>
 </form></details>{% endif %}
 </section>{% endif %}
 

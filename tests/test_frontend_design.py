@@ -49,7 +49,7 @@ class FrontendDesignTests(unittest.TestCase):
         source = (TEMPLATES / "ui_macros.html").read_text(encoding="utf-8")
         for code, label in (
             ("UNPAID", "Impayée"), ("PAID", "Payée"),
-            ("APPROVED", "Validée"), ("REJECTED", "Rejetée"),
+            ("APPROVED", "Validée"), ("VALIDATED", "Prête à valider"), ("REJECTED", "Rejetée"),
             ("REVIEW_REQUIRED", "À vérifier"), ("PENDING", "En attente"),
             ("DUPLICATE", "Doublon"), ("ERROR", "Erreur"),
         ):
@@ -83,9 +83,14 @@ class FrontendDesignTests(unittest.TestCase):
         self.assertIn("Aurélia transforme vos documents en données comptables prêtes à valider", setup)
         self.assertIn("Importer</li>", setup)
         self.assertIn("Configurer Aurélia", setup)
-        self.assertEqual(dashboard.count(">Importer un document<"), 1)
+        self.assertEqual(dashboard.count('<button class="btn" type="submit">Importer un document</button>'), 1)
+        self.assertIn(">Importer un document</h2>", dashboard)
+        self.assertNotIn("Ajouter un document", dashboard)
         self.assertIn("À traiter aujourd’hui", dashboard)
         self.assertIn('class="invoice-decision-bar"', invoice)
+        self.assertIn('role="status" aria-live="polite"', invoice)
+        self.assertIn('type="reset">Annuler les modifications', invoice)
+        self.assertIn('role="alert"', setup)
         for action in ("Valider", "Corriger", "Rejeter"):
             self.assertIn(f">{action}</a>", invoice)
 

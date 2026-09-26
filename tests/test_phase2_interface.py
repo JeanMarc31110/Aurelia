@@ -159,6 +159,7 @@ class Phase2InterfaceTests(unittest.TestCase):
         self.assertEqual(page.status_code, 200)
         self.assertIn(number.upper(), page.text)
         self.assertIn("Alertes et contrôles", page.text)
+        self.assertNotIn("Compte None", page.text)
         self.assertNotIn("raw_json", page.text)
 
     def test_work_queue_uses_real_invoice_state_and_links_to_review(self):
@@ -174,6 +175,11 @@ class Phase2InterfaceTests(unittest.TestCase):
         self.assertEqual(detail.status_code, 200)
         self.assertIn('class="invoice-decision-bar"', detail.text)
         self.assertLess(detail.text.index("Valider"), detail.text.index("Informations principales"))
+
+        validated_id = self.seed_invoice(status="VALIDATED", number="WORK-QUEUE-VALIDATED")
+        validated_page = self.session.get(f"{self.base_url}/work", timeout=5)
+        self.assertIn("Prête à valider", validated_page.text)
+        self.assertIn(f'href="/invoices/{validated_id}">Valider</a>', validated_page.text)
 
     def test_validation_correction_rejection_and_history(self):
         approved_id = self.seed_invoice()
