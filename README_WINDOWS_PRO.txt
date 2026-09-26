@@ -1,47 +1,66 @@
-AURELIA V5.0.1 — DISTRIBUTION WINDOWS PROFESSIONNELLE
-======================================================
+AURELIA — BUILD WINDOWS PORTABLE PHASE 6D
+==========================================
 
-OBJECTIF
+AUTORITÉ
 --------
-Cette distribution remplace l'installation client par fichiers .BAT.
+VERSION.txt est l'unique source de version produit. requirements.lock.txt et
+requirements-build.txt verrouillent respectivement les dépendances applicatives
+et la chaîne PyInstaller. Le build exige la version Python exacte déclarée en
+tête de requirements.lock.txt.
 
-Le client final doit recevoir uniquement :
-
-    AURELIA_Setup_5.0.1.exe
-
-Le Setup installe AURELIA dans Program Files avec ses dépendances, crée les raccourcis et fournit un désinstalleur Windows. Le client n'a pas besoin d'installer Python.
-
-IMPORTANT — SMARTSCREEN / MICROSOFT DEFENDER
----------------------------------------------
-Un installateur EXE nouvellement créé mais NON SIGNE peut encore déclencher un avertissement Microsoft SmartScreen.
-
-Pour une distribution commerciale FEWURA :
-1. Obtenir un certificat de signature de code pour FEWURA.
-2. Construire AURELIA_Setup_5.0.1.exe.
-3. Signer l'installateur avec SIGNER_SETUP_FEWURA.bat.
-4. Vérifier la signature avant publication.
-5. Distribuer toujours les versions signées avec la même identité éditeur.
-
-Ne demandez pas aux clients de désactiver Microsoft Defender, SmartScreen ou Smart App Control.
-
-CONSTRUCTION
-------------
-Sur un PC Windows de développement :
-1. Installer Python 3.11+.
-2. Installer Inno Setup 6.
-3. Lancer CONSTRUIRE_SETUP_WINDOWS.bat.
-
-Le résultat est créé dans :
-    installer\output\AURELIA_Setup_5.0.1.exe
-
-SIGNATURE
+PRÉREQUIS
 ---------
-Installer le Windows SDK / SignTool, configurer FEWURA_CERT_SHA1 avec l'empreinte du certificat puis lancer SIGNER_SETUP_FEWURA.bat.
+- Windows 10/11 x64
+- Python 3.14.6 accessible via le lanceur `py -3.14`
+- Git
+- accès à l'index Python uniquement si .buildvenv doit être créé/complété
 
-CLIENT FINAL
-------------
-Le client reçoit uniquement le Setup signé, l'installe avec l'assistant Windows et lance AURELIA depuis le Bureau ou le Menu Démarrer.
+COMMANDE DE PRODUCTION
+----------------------
+Depuis un dépôt Git propre :
 
-SECURITE
---------
-Cette correction ne désactive ni ne contourne aucune protection Windows. Elle remplace le packaging de développement par une chaîne de distribution standard et prévoit la signature Authenticode appropriée.
+    BUILD_WINDOWS_RELEASE.bat
+
+Le script installe les versions verrouillées dans .buildvenv, vérifie le dépôt,
+la version Python et les dépendances, exécute tous les tests, puis produit deux
+builds PyInstaller onedir propres. Tout échec arrête la chaîne.
+
+SORTIES
+-------
+Pour une VERSION.txt contenant X.Y.Z :
+
+    release\Aurelia-X.Y.Z\app\Aurelia.exe
+    release\Aurelia-X.Y.Z\build-manifest.json
+    release\Aurelia-X.Y.Z\THIRD_PARTY_COMPONENTS.json
+    release\Aurelia-X.Y.Z\SHA256SUMS.txt
+    release\Aurelia-X.Y.Z-portable.zip
+
+Le manifest contient la provenance Git, les versions de Python/PyInstaller, les
+empreintes du lockfile et du spec, la version du schéma, les métriques du bundle,
+les résultats des smokes et le classement de reproductibilité.
+
+VÉRIFICATION DES EMPREINTES
+---------------------------
+Comparer chaque SHA-256 de SHA256SUMS.txt avec :
+
+    Get-FileHash -Algorithm SHA256 <chemin>
+
+CONTENU
+-------
+Le dossier portable inclut templates, fichiers statiques, configuration,
+notices et Tesseract avec eng/fra/spa/osd. Il exclut tests, bases, secrets,
+journaux, sauvegardes, caches, documentation de développement et dépôts Git.
+Les données mutables sont écrites sous LocalAppData/Documents, jamais dans le
+dossier applicatif.
+
+ANCIENNES CHAÎNES
+-----------------
+- BUILD_WINDOWS_RELEASE.bat : CANONICAL pour Phase 6D.
+- installer\aurelia.spec : CANONICAL, invoqué par le script Python.
+- CONSTRUIRE_SETUP_WINDOWS.bat : DEPRECATED, arrêt explicite.
+- installer\Aurelia.iss et scripts de signature : LEGACY/RESERVED pour Phase 6E.
+
+LIMITES DE PHASE
+----------------
+Phase 6D ne produit ni installateur Inno Setup, ni signature Authenticode, ni
+publication, ni mécanisme de mise à jour/rollback. Ces travaux relèvent de 6E.

@@ -1,9 +1,12 @@
 # -*- mode: python ; coding: utf-8 -*-
+import os
 from pathlib import Path
-from PyInstaller.utils.hooks import collect_all
 
 
 project_root = Path(SPECPATH).parent
+version_file = Path(os.environ.get('AURELIA_VERSION_FILE', '')).resolve()
+if not version_file.is_file():
+    raise RuntimeError('AURELIA_VERSION_FILE must identify the generated Windows version resource')
 datas = [
     (str(project_root / 'app' / 'templates'), 'app/templates'),
     (str(project_root / 'app' / 'static'), 'app/static'),
@@ -18,11 +21,6 @@ hiddenimports = [
     'uvicorn.protocols.websockets.auto', 'uvicorn.lifespan.on', 'multipart',
 ]
 
-for package in ['pypdfium2', 'PIL', 'pytesseract', 'lxml', 'reportlab']:
-    package_datas, package_binaries, package_hidden = collect_all(package)
-    datas += package_datas
-    hiddenimports += package_hidden
-
 a = Analysis(
     [str(project_root / 'aurelia_launcher.py')],
     pathex=[str(project_root)],
@@ -34,6 +32,7 @@ exe = EXE(
     pyz, a.scripts, [], exclude_binaries=True, name='Aurelia', debug=False,
     bootloader_ignore_signals=False, strip=False, upx=False, console=False,
     disable_windowed_traceback=False, argv_emulation=False, icon=None,
+    version=str(version_file),
 )
 coll = COLLECT(
     exe, a.binaries, a.datas, strip=False, upx=False, upx_exclude=[], name='Aurelia',
