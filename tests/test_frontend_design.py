@@ -157,6 +157,28 @@ class FrontendDesignTests(unittest.TestCase):
             source = path.read_text(encoding="utf-8")
             self.assertNotIn("Aurelia", source, path.name)
 
+    def test_phase7d_release_polish_contract(self):
+        base = (TEMPLATES / "base.html").read_text(encoding="utf-8")
+        auth = (TEMPLATES / "auth_base.html").read_text(encoding="utf-8")
+        invoices = (TEMPLATES / "invoice_list.html").read_text(encoding="utf-8")
+        accounting = (TEMPLATES / "accounting_exports.html").read_text(encoding="utf-8")
+        css = (STATIC / "style.css").read_text(encoding="utf-8")
+        for shell in (base, auth):
+            self.assertIn('name="application-name" content="Aurélia"', shell)
+            self.assertIn('rel="mask-icon"', shell)
+            self.assertIn('sizes="any"', shell)
+        self.assertIn(">Importer un document</a>", invoices)
+        self.assertIn(">Appliquer les filtres</button>", invoices)
+        self.assertIn(">Prêtes à exporter (", accounting)
+        self.assertIn("grid-template-columns:repeat(3,minmax(0,1fr))", css)
+        self.assertIn("details>summary{min-height:40px", css)
+        self.assertIn("background:var(--color-primary-ink)", css)
+        self.assertIn("background:var(--color-success-ink)", css)
+        for asset in ("aurelia-symbol.svg", "aurelia-logo.svg", "aurelia-symbol-mono.svg"):
+            source = (STATIC / "brand" / asset).read_text(encoding="utf-8")
+            self.assertIn('aria-labelledby="title desc"', source)
+            self.assertIn('<desc id="desc">', source)
+
 
 if __name__ == "__main__":
     unittest.main()

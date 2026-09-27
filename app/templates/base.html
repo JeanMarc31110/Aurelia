@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr" data-theme="aurelia-light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><meta name="theme-color" content="#f8fafc"><title>{% block title %}Aurélia{% endblock %}</title><link rel="icon" type="image/svg+xml" href="/static/brand/aurelia-symbol.svg"><link rel="stylesheet" href="/static/style.css"></head>
+<html lang="fr" data-theme="aurelia-light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><meta name="theme-color" content="#0ea5a0"><meta name="application-name" content="Aurélia"><title>{% block title %}Aurélia{% endblock %}</title><link rel="icon" type="image/svg+xml" sizes="any" href="/static/brand/aurelia-symbol.svg"><link rel="mask-icon" href="/static/brand/aurelia-symbol-mono.svg" color="#0ea5a0"><link rel="stylesheet" href="/static/style.css"></head>
 <body class="app-body page-{{active_page|default('default')}}">
 <svg width="0" height="0" class="icon-sprite" aria-hidden="true">
   <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10M9 20v-6h6v6"/></symbol>
@@ -16,7 +16,7 @@
   <symbol id="i-scan" viewBox="0 0 24 24"><path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4M8 12h8"/></symbol>
 </svg>
 <div class="app-shell"><aside class="sidebar" aria-label="Navigation principale">
-  <a href="/" class="brand" aria-label="Accueil Aurélia"><img class="brand-symbol" src="/static/brand/aurelia-symbol.svg" alt=""><span><span class="brand-name">Aurélia</span><span class="brand-version">Espace local</span></span></a>
+  <a href="/" class="brand" aria-label="Accueil Aurélia"><img class="brand-symbol" src="/static/brand/aurelia-symbol.svg" width="34" height="34" alt=""><span><span class="brand-name">Aurélia</span><span class="brand-version">Espace local</span></span></a>
   <nav class="sidebar-nav" aria-label="Sections Aurélia">
     <a class="nav-link {{'active' if active_page=='dashboard' else ''}}" {% if active_page=='dashboard' %}aria-current="page"{% endif %} href="/"><svg class="nav-icon"><use href="#i-home"/></svg><span>Accueil</span></a>
     <a class="nav-link {{'active' if active_page in ['work','invoices','invoice','document'] else ''}}" {% if active_page in ['work','invoices','invoice','document'] %}aria-current="page"{% endif %} href="/work"><svg class="nav-icon"><use href="#i-work"/></svg><span>À traiter</span></a>
