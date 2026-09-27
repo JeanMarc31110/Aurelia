@@ -75,16 +75,23 @@ class FrontendDesignTests(unittest.TestCase):
 
     def test_design_system_and_responsive_breakpoints_are_centralized(self):
         css = (STATIC / "style.css").read_text(encoding="utf-8")
-        for token in ("--navy-950", "--success", "--warning", "--danger", "--radius", "--sidebar-width"):
+        for token in ("--color-primary", "--color-primary-soft", "--color-text", "--color-text-secondary",
+                      "--color-surface", "--color-border", "--color-success", "--color-warning",
+                      "--color-error", "--radius", "--sidebar-width"):
             self.assertIn(token, css)
         self.assertIn("@media(max-width:900px)", css)
+        self.assertIn("@media(max-width:820px)", css)
+        self.assertIn("@media(max-width:412px)", css)
         self.assertIn("prefers-reduced-motion", css)
 
-    def test_dark_theme_is_declared_on_app_and_auth_shells(self):
+    def test_light_theme_and_local_brand_assets_are_declared_on_shells(self):
         for name in ("base.html", "auth_base.html"):
             source = (TEMPLATES / name).read_text(encoding="utf-8")
-            self.assertIn('data-theme="aurelia-dark"', source)
-            self.assertIn('name="color-scheme" content="dark"', source)
+            self.assertIn('data-theme="aurelia-light"', source)
+            self.assertIn('name="color-scheme" content="light"', source)
+            self.assertIn('/static/brand/aurelia-symbol.svg', source)
+        for asset in ("aurelia-symbol.svg", "aurelia-logo.svg", "aurelia-symbol-mono.svg"):
+            self.assertTrue((STATIC / "brand" / asset).is_file(), asset)
 
     def test_core_ux_copy_and_primary_actions_are_explicit(self):
         setup = (TEMPLATES / "setup.html").read_text(encoding="utf-8")
@@ -103,6 +110,22 @@ class FrontendDesignTests(unittest.TestCase):
         self.assertIn('role="alert"', setup)
         for action in ("Valider", "Corriger", "Rejeter"):
             self.assertIn(f">{action}</a>", invoice)
+
+    def test_phase7b_pilot_surfaces_keep_action_first_contract(self):
+        dashboard = (TEMPLATES / "dashboard.html").read_text(encoding="utf-8")
+        work = (TEMPLATES / "work_queue.html").read_text(encoding="utf-8")
+        invoice = (TEMPLATES / "invoice_detail.html").read_text(encoding="utf-8")
+        bank = (TEMPLATES / "bank.html").read_text(encoding="utf-8")
+        self.assertIn("Tableau de bord", dashboard)
+        self.assertEqual(dashboard.count('<button class="btn" type="submit">Importer un document</button>'), 1)
+        self.assertRegex(work, r'class="[^"]*\bwork-item\b')
+        self.assertIn("Confiance :", work)
+        decision = invoice.index('class="invoice-decision-bar"')
+        details = invoice.index("Données extraites")
+        self.assertLess(decision, details)
+        self.assertIn('class="bank-page"', bank)
+        self.assertIn("Proposition Aurélia", bank)
+        self.assertIn("Confirmer le rapprochement", bank)
 
 
 if __name__ == "__main__":

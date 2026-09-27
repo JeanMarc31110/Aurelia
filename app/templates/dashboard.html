@@ -2,10 +2,10 @@
 {% block title %}Tableau de bord — Aurelia{% endblock %}{% block page_name %}Tableau de bord{% endblock %}
 {% block content %}
 <div class="dashboard-page">
-<header class="page-header"><div class="page-header-copy"><p class="eyebrow">Facturation numérique</p><h1>Bonjour {{user.username}}</h1><p class="page-subtitle">{{company.legal_name if company else 'Votre environnement Aurelia'}} · Aurelia propose, vous décidez.</p></div></header>
+<header class="page-header"><div class="page-header-copy"><p class="eyebrow">Vue d’ensemble</p><h1>Tableau de bord</h1><p class="page-subtitle">Bonjour {{user.username}} · {{company.legal_name if company else 'Votre environnement Aurélia'}}. Commencez par les éléments qui demandent une décision.</p></div></header>
 {% if not company %}<div class="notice warning"><div><b>Aucune société active n’est configurée.</b> Complétez <a href="/settings/company">la fiche Entreprise</a> avant tout import de production.</div></div>{% endif %}
 <section class="card dashboard-primary-action" id="import-document">
-  <div><span class="human-label">Étape suivante</span><h2>Importer un document</h2><p>PDF, facture électronique ou document comptable. Aurélia extrait les données et vous propose une fiche à vérifier.</p></div>
+  <div><span class="human-label">Action principale</span><h2>Importer un document</h2><p>Ajoutez un PDF, une facture électronique ou un document comptable. Aurélia prépare les informations ; vous les vérifiez avant toute décision.</p></div>
   <form action="/invoices/import" method="post" enctype="multipart/form-data"><label>Choisir un document<input type="file" name="file" required></label><button class="btn" type="submit">Importer un document</button></form>
 </section>
 <div class="section-heading"><div><p class="eyebrow">Priorités</p><h2>À traiter aujourd’hui</h2></div><a href="/work">Ouvrir la file de travail</a></div>

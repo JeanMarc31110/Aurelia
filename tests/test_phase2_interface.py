@@ -166,7 +166,7 @@ class Phase2InterfaceTests(unittest.TestCase):
         invoice_id = self.seed_invoice(status="REVIEW_REQUIRED", number="WORK-QUEUE-001")
         page = self.session.get(f"{self.base_url}/work", timeout=5)
         self.assertEqual(page.status_code, 200)
-        self.assertIn("Tout ce qui nécessite votre attention", page.text)
+        self.assertIn("Chaque document présente son problème principal", page.text)
         self.assertIn("WORK-QUEUE-001", page.text)
         self.assertIn(f'href="/invoices/{invoice_id}"', page.text)
         self.assertIn("À vérifier", page.text)

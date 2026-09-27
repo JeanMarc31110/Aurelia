@@ -179,7 +179,7 @@ class TemplateCompatibilityTests(unittest.TestCase):
 
         dashboard = self.session.get(f"{self.base_url}/", timeout=5)
         self.assertEqual(dashboard.status_code, 200)
-        self.assertIn("Facturation numérique", dashboard.text)
+        self.assertIn("Tableau de bord", dashboard.text)
         self.assertIn("Déconnexion", dashboard.text)
         self.assertIn("Aucune société active n’est configurée", dashboard.text)
 
