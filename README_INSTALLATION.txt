@@ -1,39 +1,24 @@
-AURELIA — EXÉCUTION WINDOWS PORTABLE
-====================================
+AURELIA — INSTALLATION WINDOWS
+==============================
 
-1. Extraire entièrement l'archive portable dans un dossier local.
-2. Lancer app\Aurelia.exe.
-3. Le navigateur s'ouvre sur http://127.0.0.1:8000 lorsque le serveur est prêt.
-4. Au premier lancement, créer l'administrateur et renseigner l'entreprise.
+1. Vérifier l'empreinte SHA-256 fournie avec Aurelia-Setup-X.Y.Z.exe.
+2. Lancer Aurelia-Setup-X.Y.Z.exe avec le compte Windows qui utilisera Aurelia.
+3. Conserver le dossier proposé : %LOCALAPPDATA%\Programs\Aurelia.
+4. Lancer Aurelia depuis le menu Démarrer.
+5. Au premier lancement, créer le compte administrateur et le profil société.
 
-Aucun Python, PowerShell, pip ou Tesseract séparé n'est requis à l'exécution.
-Aucun compte ou mot de passe par défaut n'est créé.
+Aucun Python, pip ou Tesseract séparé n'est requis. Aurelia n'installe aucun
+mot de passe par défaut et n'exige pas de droits administrateur.
 
-DONNÉES
--------
+DONNÉES ET DÉSINSTALLATION
+--------------------------
+Les données internes restent sous %LOCALAPPDATA%\Aurelia et les documents sous
+%USERPROFILE%\Documents\Aurelia. Réinstaller ou désinstaller l'application ne
+supprime pas ces données. Utiliser les fonctions de sauvegarde Aurelia avant
+toute intervention importante.
 
-Données internes : %LOCALAPPDATA%\Aurelia
-Documents :        %USERPROFILE%\Documents\Aurelia
-
-La base, les documents, les exports et les sauvegardes restent hors du dossier
-applicatif portable. Déplacer ou remplacer ce dossier ne déplace pas les données.
-
-OCR
----
-
-Le produit embarque Tesseract 5.4 et les langues eng, fra, spa et osd. Les
-notices sont disponibles dans THIRD_PARTY_NOTICES.txt.
-
-SÉCURITÉ ET DIAGNOSTIC
-----------------------
-
-Aurelia écoute uniquement sur 127.0.0.1:8000. Une seule instance peut utiliser
-un environnement de données. Les décisions financières restent humaines.
-
-Journal : %LOCALAPPDATA%\Aurelia\Logs\aurelia.log
-
-Si le port 8000 est occupé, Aurelia le signale et ne choisit pas silencieusement
-un autre port.
-
-Cette archive Phase 6D n'est pas l'installateur signé destiné à la distribution
-finale. L'installateur et la signature sont réservés à la Phase 6E.
+SIGNATURE
+---------
+Avant diffusion commerciale, la signature Authenticode doit être valide et
+provenir du certificat officiel de l'éditeur. Une version non signée est un
+artefact de validation technique, pas une livraison client finale.
