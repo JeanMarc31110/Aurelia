@@ -1,7 +1,7 @@
 {% extends "auth_base.html" %}
-{% block title %}Bienvenue dans Aurelia{% endblock %}
+{% block title %}Bienvenue dans Aurélia{% endblock %}
 {% block shell_class %}setup-shell{% endblock %}
-{% block brand_message %}<h2>Aurelia propose · vous décidez</h2><p>Un environnement de travail local pour préparer vos documents comptables avec contrôle humain.</p>{% endblock %}
+{% block brand_message %}<h2>Aurélia propose · vous décidez</h2><p>Un environnement local pour préparer vos documents comptables avec contrôle humain.</p>{% endblock %}
 {% block content %}
 <div class="setup-value">
   <p class="eyebrow">Première installation</p>
@@ -11,6 +11,7 @@
     <li><span>1</span>Importer</li><li><span>2</span>Vérifier</li><li><span>3</span>Valider</li><li><span>4</span>Exporter</li>
   </ol>
 </div>
+<div class="setup-reassurance" role="note"><b>Vos données restent sur ce PC.</b><span>Cette configuration crée votre compte administrateur et l’identité de votre entreprise.</span></div>
 <div class="setup-form-intro"><h2>Configurer votre espace local</h2><p class="muted">Votre compte, votre entreprise et vos documents restent sur ce PC.</p></div>
 {% if error %}<div class="notice error" id="setup-error" role="alert">{{error}}</div>{% endif %}
 <form method="post" action="/setup"{% if error %} aria-describedby="setup-error"{% endif %}>

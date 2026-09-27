@@ -17,7 +17,7 @@
 </svg>
 <div class="app-shell"><aside class="sidebar" aria-label="Navigation principale">
   <a href="/" class="brand" aria-label="Accueil Aurélia"><img class="brand-symbol" src="/static/brand/aurelia-symbol.svg" alt=""><span><span class="brand-name">Aurélia</span><span class="brand-version">Espace local</span></span></a>
-  <nav class="sidebar-nav" aria-label="Sections Aurelia">
+  <nav class="sidebar-nav" aria-label="Sections Aurélia">
     <a class="nav-link {{'active' if active_page=='dashboard' else ''}}" {% if active_page=='dashboard' %}aria-current="page"{% endif %} href="/"><svg class="nav-icon"><use href="#i-home"/></svg><span>Accueil</span></a>
     <a class="nav-link {{'active' if active_page in ['work','invoices','invoice','document'] else ''}}" {% if active_page in ['work','invoices','invoice','document'] %}aria-current="page"{% endif %} href="/work"><svg class="nav-icon"><use href="#i-work"/></svg><span>À traiter</span></a>
     <a class="nav-link {{'active' if active_page in ['bank','payments'] else ''}}" {% if active_page in ['bank','payments'] %}aria-current="page"{% endif %} href="/bank"><svg class="nav-icon"><use href="#i-bank"/></svg><span>Banque</span></a>
@@ -26,7 +26,7 @@
     <a class="nav-link {{'active' if active_page in ['settings','company','ocr','banks'] else ''}}" {% if active_page in ['settings','company','ocr','banks'] %}aria-current="page"{% endif %} href="/settings"><svg class="nav-icon"><use href="#i-settings"/></svg><span>Paramètres</span></a>
   </nav>
   <div class="sidebar-footnote"><span class="local-dot"></span><span>Système local</span></div>
-  {% if user and user.role=='admin' %}<div class="sidebar-footer"><form method="post" action="/shutdown" class="shutdown-form"><button type="submit" class="shutdown-button">Quitter Aurelia</button></form></div>{% endif %}
+  {% if user and user.role=='admin' %}<div class="sidebar-footer"><form method="post" action="/shutdown" class="shutdown-form"><button type="submit" class="shutdown-button">Quitter Aurélia</button></form></div>{% endif %}
 </aside>
 <div class="app-column"><header class="topbar"><div class="topbar-heading"><div class="topbar-title">{% block page_name %}Aurélia{% endblock %}</div><div class="topbar-context">Vos données · votre décision</div></div><div class="account-area"><span class="local-status"><span class="local-dot"></span>Local</span><div class="account-chip"><span class="avatar">{{user.username[0] if user and user.username else 'A'}}</span><span>{{user.username if user else ''}}</span></div><a href="/logout" class="logout-link">Déconnexion</a></div></header><main class="content">{% block content %}{% endblock %}</main></div></div>
 </body></html>

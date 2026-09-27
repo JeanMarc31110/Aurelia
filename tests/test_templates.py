@@ -189,7 +189,7 @@ class TemplateCompatibilityTests(unittest.TestCase):
                              ("/integrations", "Import e-mail local"),
                              ("/settings", "Configuration locale"),
                              ("/emails", "Importer un fichier .eml"),
-                             ("/settings/company", "Informations légales et coordonnées"),
+                             ("/settings/company", "Informations de l’entreprise"),
                              ("/settings/ocr", "Configuration technique locale"),
                              ("/settings/supplier-banks", "Historique des coordonnées bancaires détectées")):
             with self.subTest(path=path):

@@ -127,6 +127,36 @@ class FrontendDesignTests(unittest.TestCase):
         self.assertIn("Proposition Aurélia", bank)
         self.assertIn("Confirmer le rapprochement", bank)
 
+    def test_phase7c_secondary_surfaces_share_the_approved_visual_contract(self):
+        accounting = (TEMPLATES / "accounting_exports.html").read_text(encoding="utf-8")
+        integrations = (TEMPLATES / "integrations.html").read_text(encoding="utf-8")
+        settings = (TEMPLATES / "settings.html").read_text(encoding="utf-8")
+        company = (TEMPLATES / "company.html").read_text(encoding="utf-8")
+        ocr = (TEMPLATES / "ocr_settings.html").read_text(encoding="utf-8")
+        email = (TEMPLATES / "emails.html").read_text(encoding="utf-8")
+        supplier_banks = (TEMPLATES / "supplier_banks.html").read_text(encoding="utf-8")
+        setup = (TEMPLATES / "setup.html").read_text(encoding="utf-8")
+        login = (TEMPLATES / "login.html").read_text(encoding="utf-8")
+        self.assertIn('class="accounting-page secondary-page"', accounting)
+        self.assertIn('class="cards workflow-summary"', accounting)
+        self.assertIn("Disponible maintenant", integrations)
+        self.assertIn("Service externe", integrations)
+        self.assertIn('class="settings-page secondary-page"', settings)
+        self.assertIn("Usage quotidien", settings)
+        self.assertIn("Configuration technique", settings)
+        self.assertGreaterEqual(company.count('class="form-section"'), 4)
+        self.assertIn("Configuration avancée", ocr)
+        self.assertIn("Traitement local", email)
+        self.assertIn('class="empty-state empty-state-action"', supplier_banks)
+        self.assertIn("Importer une facture", supplier_banks)
+        self.assertIn("Vos données restent sur ce PC", setup)
+        self.assertIn('role="alert"', login)
+
+    def test_customer_facing_templates_use_accented_product_name(self):
+        for path in TEMPLATES.glob("*.html"):
+            source = path.read_text(encoding="utf-8")
+            self.assertNotIn("Aurelia", source, path.name)
+
 
 if __name__ == "__main__":
     unittest.main()
