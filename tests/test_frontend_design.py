@@ -12,9 +12,11 @@ class FrontendDesignTests(unittest.TestCase):
     def test_authenticated_pages_share_the_application_shell(self):
         pages = {
             "dashboard.html", "invoice_list.html", "invoice_detail.html",
+            "work_queue.html",
             "document_detail.html", "bank.html", "payments.html",
             "accounting_exports.html", "emails.html", "company.html",
-            "supplier_banks.html", "ocr_settings.html",
+            "supplier_banks.html", "ocr_settings.html", "integrations.html",
+            "settings.html",
         }
         for name in pages:
             source = (TEMPLATES / name).read_text(encoding="utf-8")
@@ -28,27 +30,36 @@ class FrontendDesignTests(unittest.TestCase):
 
     def test_primary_navigation_uses_only_existing_routes(self):
         source = (TEMPLATES / "base.html").read_text(encoding="utf-8")
-        for route in (
-            '/', '/invoices', '/emails', '/payments', '/bank',
-            '/exports/accounting', '/settings/company',
-            '/settings/supplier-banks', '/settings/ocr', '/logout',
-        ):
+        for route in ('/', '/work', '/bank', '/exports/accounting', '/integrations', '/settings', '/logout'):
             self.assertIn(f'href="{route}"', source)
         self.assertIn('aria-label="Navigation principale"', source)
 
     def test_primary_navigation_uses_clear_customer_labels(self):
         source = (TEMPLATES / "base.html").read_text(encoding="utf-8")
-        for label in (
-            "Tableau de bord", "Factures", "Rapprochements", "Banque",
-            "Échéances", "Exports", "Entreprise", "Paramètres",
-        ):
+        for label in ("Accueil", "À traiter", "Banque", "Comptabilité", "Intégrations", "Paramètres"):
             self.assertIn(f"<span>{label}</span>", source)
+        self.assertEqual(source.count('class="nav-link '), 6)
+        self.assertNotIn("<span>Rapprochements</span>", source)
+        self.assertNotIn('href="/settings/ocr"', source)
+        self.assertIn('aria-current="page"', source)
+
+    def test_secondary_workflows_keep_legacy_routes_behind_product_hubs(self):
+        settings = (TEMPLATES / "settings.html").read_text(encoding="utf-8")
+        integrations = (TEMPLATES / "integrations.html").read_text(encoding="utf-8")
+        bank = (TEMPLATES / "bank.html").read_text(encoding="utf-8")
+        accounting = (TEMPLATES / "accounting_exports.html").read_text(encoding="utf-8")
+        for route in ("/settings/company", "/settings/supplier-banks", "/settings/ocr"):
+            self.assertIn(f'href="{route}"', settings)
+        self.assertIn('href="/emails"', integrations)
+        self.assertIn('href="/payments"', bank)
+        self.assertIn('id="configuration"', accounting)
+        self.assertIn("missing_config", accounting)
 
     def test_business_statuses_are_centralized_and_translated(self):
         source = (TEMPLATES / "ui_macros.html").read_text(encoding="utf-8")
         for code, label in (
             ("UNPAID", "Impayée"), ("PAID", "Payée"),
-            ("APPROVED", "Validée"), ("REJECTED", "Rejetée"),
+            ("APPROVED", "Validée"), ("VALIDATED", "Prête à valider"), ("REJECTED", "Rejetée"),
             ("REVIEW_REQUIRED", "À vérifier"), ("PENDING", "En attente"),
             ("DUPLICATE", "Doublon"), ("ERROR", "Erreur"),
         ):
@@ -64,16 +75,109 @@ class FrontendDesignTests(unittest.TestCase):
 
     def test_design_system_and_responsive_breakpoints_are_centralized(self):
         css = (STATIC / "style.css").read_text(encoding="utf-8")
-        for token in ("--navy-950", "--success", "--warning", "--danger", "--radius", "--sidebar-width"):
+        for token in ("--color-primary", "--color-primary-soft", "--color-text", "--color-text-secondary",
+                      "--color-surface", "--color-border", "--color-success", "--color-warning",
+                      "--color-error", "--radius", "--sidebar-width"):
             self.assertIn(token, css)
         self.assertIn("@media(max-width:900px)", css)
+        self.assertIn("@media(max-width:820px)", css)
+        self.assertIn("@media(max-width:412px)", css)
         self.assertIn("prefers-reduced-motion", css)
 
-    def test_dark_theme_is_declared_on_app_and_auth_shells(self):
+    def test_light_theme_and_local_brand_assets_are_declared_on_shells(self):
         for name in ("base.html", "auth_base.html"):
             source = (TEMPLATES / name).read_text(encoding="utf-8")
-            self.assertIn('data-theme="aurelia-dark"', source)
-            self.assertIn('name="color-scheme" content="dark"', source)
+            self.assertIn('data-theme="aurelia-light"', source)
+            self.assertIn('name="color-scheme" content="light"', source)
+            self.assertIn('/static/brand/aurelia-symbol.svg', source)
+        for asset in ("aurelia-symbol.svg", "aurelia-logo.svg", "aurelia-symbol-mono.svg"):
+            self.assertTrue((STATIC / "brand" / asset).is_file(), asset)
+
+    def test_core_ux_copy_and_primary_actions_are_explicit(self):
+        setup = (TEMPLATES / "setup.html").read_text(encoding="utf-8")
+        dashboard = (TEMPLATES / "dashboard.html").read_text(encoding="utf-8")
+        invoice = (TEMPLATES / "invoice_detail.html").read_text(encoding="utf-8")
+        self.assertIn("Aurélia transforme vos documents en données comptables prêtes à valider", setup)
+        self.assertIn("Importer</li>", setup)
+        self.assertIn("Configurer Aurélia", setup)
+        self.assertEqual(dashboard.count('<button class="btn" type="submit">Importer un document</button>'), 1)
+        self.assertIn(">Importer un document</h2>", dashboard)
+        self.assertNotIn("Ajouter un document", dashboard)
+        self.assertIn("À traiter aujourd’hui", dashboard)
+        self.assertIn('class="invoice-decision-bar"', invoice)
+        self.assertIn('role="status" aria-live="polite"', invoice)
+        self.assertIn('type="reset">Annuler les modifications', invoice)
+        self.assertIn('role="alert"', setup)
+        for action in ("Valider", "Corriger", "Rejeter"):
+            self.assertIn(f">{action}</a>", invoice)
+
+    def test_phase7b_pilot_surfaces_keep_action_first_contract(self):
+        dashboard = (TEMPLATES / "dashboard.html").read_text(encoding="utf-8")
+        work = (TEMPLATES / "work_queue.html").read_text(encoding="utf-8")
+        invoice = (TEMPLATES / "invoice_detail.html").read_text(encoding="utf-8")
+        bank = (TEMPLATES / "bank.html").read_text(encoding="utf-8")
+        self.assertIn("Tableau de bord", dashboard)
+        self.assertEqual(dashboard.count('<button class="btn" type="submit">Importer un document</button>'), 1)
+        self.assertRegex(work, r'class="[^"]*\bwork-item\b')
+        self.assertIn("Confiance :", work)
+        decision = invoice.index('class="invoice-decision-bar"')
+        details = invoice.index("Données extraites")
+        self.assertLess(decision, details)
+        self.assertIn('class="bank-page"', bank)
+        self.assertIn("Proposition Aurélia", bank)
+        self.assertIn("Confirmer le rapprochement", bank)
+
+    def test_phase7c_secondary_surfaces_share_the_approved_visual_contract(self):
+        accounting = (TEMPLATES / "accounting_exports.html").read_text(encoding="utf-8")
+        integrations = (TEMPLATES / "integrations.html").read_text(encoding="utf-8")
+        settings = (TEMPLATES / "settings.html").read_text(encoding="utf-8")
+        company = (TEMPLATES / "company.html").read_text(encoding="utf-8")
+        ocr = (TEMPLATES / "ocr_settings.html").read_text(encoding="utf-8")
+        email = (TEMPLATES / "emails.html").read_text(encoding="utf-8")
+        supplier_banks = (TEMPLATES / "supplier_banks.html").read_text(encoding="utf-8")
+        setup = (TEMPLATES / "setup.html").read_text(encoding="utf-8")
+        login = (TEMPLATES / "login.html").read_text(encoding="utf-8")
+        self.assertIn('class="accounting-page secondary-page"', accounting)
+        self.assertIn('class="cards workflow-summary"', accounting)
+        self.assertIn("Disponible maintenant", integrations)
+        self.assertIn("Service externe", integrations)
+        self.assertIn('class="settings-page secondary-page"', settings)
+        self.assertIn("Usage quotidien", settings)
+        self.assertIn("Configuration technique", settings)
+        self.assertGreaterEqual(company.count('class="form-section"'), 4)
+        self.assertIn("Configuration avancée", ocr)
+        self.assertIn("Traitement local", email)
+        self.assertIn('class="empty-state empty-state-action"', supplier_banks)
+        self.assertIn("Importer une facture", supplier_banks)
+        self.assertIn("Vos données restent sur ce PC", setup)
+        self.assertIn('role="alert"', login)
+
+    def test_customer_facing_templates_use_accented_product_name(self):
+        for path in TEMPLATES.glob("*.html"):
+            source = path.read_text(encoding="utf-8")
+            self.assertNotIn("Aurelia", source, path.name)
+
+    def test_phase7d_release_polish_contract(self):
+        base = (TEMPLATES / "base.html").read_text(encoding="utf-8")
+        auth = (TEMPLATES / "auth_base.html").read_text(encoding="utf-8")
+        invoices = (TEMPLATES / "invoice_list.html").read_text(encoding="utf-8")
+        accounting = (TEMPLATES / "accounting_exports.html").read_text(encoding="utf-8")
+        css = (STATIC / "style.css").read_text(encoding="utf-8")
+        for shell in (base, auth):
+            self.assertIn('name="application-name" content="Aurélia"', shell)
+            self.assertIn('rel="mask-icon"', shell)
+            self.assertIn('sizes="any"', shell)
+        self.assertIn(">Importer un document</a>", invoices)
+        self.assertIn(">Appliquer les filtres</button>", invoices)
+        self.assertIn(">Prêtes à exporter (", accounting)
+        self.assertIn("grid-template-columns:repeat(3,minmax(0,1fr))", css)
+        self.assertIn("details>summary{min-height:40px", css)
+        self.assertIn("background:var(--color-primary-ink)", css)
+        self.assertIn("background:var(--color-success-ink)", css)
+        for asset in ("aurelia-symbol.svg", "aurelia-logo.svg", "aurelia-symbol-mono.svg"):
+            source = (STATIC / "brand" / asset).read_text(encoding="utf-8")
+            self.assertIn('aria-labelledby="title desc"', source)
+            self.assertIn('<desc id="desc">', source)
 
 
 if __name__ == "__main__":

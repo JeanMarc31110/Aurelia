@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">Symbole Aurélia</title>
+  <desc id="desc">A géométrique blanc sur un carré turquoise arrondi.</desc>
+  <rect width="64" height="64" rx="16" fill="#0EA5A0"/>
+  <path d="M17 46 29.4 17h7.2L49 46h-8.1l-2.5-6.4H27.2L24.8 46H17Zm13-13.4h5.7L32.8 25 30 32.6Z" fill="#fff"/>
+  <path d="M25.5 38.1h13" fill="none" stroke="#CCF3EE" stroke-width="3.2" stroke-linecap="round"/>
+</svg>

@@ -1,59 +1,76 @@
-# Aurelia 5.1.0 — packaging Windows
+# Packaging Windows Aurelia
 
-## Chaîne retenue
+## Autorités et prérequis
 
-- PyInstaller 6.22.2 en mode `onedir` et sans console pour `Aurelia.exe`.
-- Inno Setup 6 pour `AureliaSetup.exe`.
-- Tesseract 5.4.0.20240606 UB Mannheim embarqué avec `eng`, `fra`, `spa`, `osd`.
-- Version unique lue depuis `VERSION.txt` par l’application, le fichier `.spec`
-  et le script Inno Setup.
+- `VERSION.txt` est l'unique version produit.
+- `requirements.lock.txt` verrouille le produit.
+- `requirements-build.txt` verrouille PyInstaller et la chaîne de build Python.
+- Windows 10/11 x64, Git, Python correspondant exactement au lockfile.
+- Inno Setup 6 est requis pour la Phase 6E.
+- Un certificat Authenticode réel est requis pour une livraison signée.
 
-## Construction
+## Phase 6D : artefact portable
 
-Depuis une invite de commandes développeur :
+Depuis un dépôt propre :
 
 ```bat
-CONSTRUIRE_SETUP_WINDOWS.bat
+BUILD_WINDOWS_RELEASE.bat
 ```
 
-Le script crée `.buildvenv`, installe les dépendances verrouillées, exécute les
-tests, construit `dist\Aurelia\Aurelia.exe`, puis compile
-`installer\output\AureliaSetup.exe` si Inno Setup 6 est installé.
+Cette commande exécute la suite complète et produit le bundle PyInstaller
+`onedir`, son archive portable, le manifest, l'inventaire tiers et les hashes
+sous `release/`. Le runtime inclut templates, statiques, configuration et
+Tesseract avec `eng`, `fra`, `spa` et `osd`. Il exclut bases, secrets, logs,
+sauvegardes, tests, caches et fichiers Git.
 
-Commandes équivalentes :
+## Phase 6E : installateur
+
+L'installateur consomme uniquement le dossier Phase 6D déjà validé :
+
+```bat
+BUILD_WINDOWS_INSTALLER.bat
+```
+
+La commande canonique appelle `tools/build_windows_installer.py`. Elle vérifie
+le commit et toutes les empreintes de l'artefact Phase 6D, exécute la suite de
+tests, puis compile `installer/Aurelia.iss` vers :
+
+```text
+release/Aurelia-Setup-X.Y.Z.exe
+```
+
+L'installation est par utilisateur dans
+`%LOCALAPPDATA%\Programs\Aurelia`, sans élévation administrative. Les données
+restent sous LocalAppData/Documents et ne sont pas supprimées à la
+désinstallation.
+
+Validation locale isolée :
+
+```bat
+.buildvenv\Scripts\python.exe tools\validate_windows_installer.py
+```
+
+Elle installe le vrai setup, contrôle le contenu contre la Phase 6D, teste le
+produit et l'OCR sans Python/Tesseract système dans `PATH`, réinstalle,
+désinstalle et vérifie la conservation des données synthétiques. Les résultats
+sont écrits dans `release/installer-build-report.json`,
+`release/installer-validation-report.json` et
+`release/SHA256SUMS-INSTALLER.txt`.
+
+## Signature
+
+`SIGNER_SETUP_FEWURA.bat` signe dynamiquement le setup versionné avec SHA-256,
+horodatage RFC 3161 et le certificat désigné par `FEWURA_CERT_SHA1`. Le script
+échoue si SignTool ou le certificat réel est absent. Il ne génère jamais de
+certificat factice. Sans signature valide, l'artefact reste réservé à la
+validation technique et ne constitue pas une livraison client finale.
+
+## Vérification manuelle d'une empreinte
 
 ```powershell
-.\.buildvenv\Scripts\python.exe -m PyInstaller --noconfirm --clean installer\aurelia.spec
-& "$env:ProgramFiles\Inno Setup 6\ISCC.exe" installer\Aurelia.iss
+Get-FileHash -Algorithm SHA256 release\Aurelia-Setup-X.Y.Z.exe
 ```
 
-## Ressources packagées
-
-- `app/templates` et `app/static` ;
-- `config/policy.json` et `config/account_mapping.json` ;
-- `VERSION.txt`, documentation d’installation et notices ;
-- runtime Tesseract et quatre modèles de langue.
-
-Aucun `.env`, token OAuth, base SQLite, upload ou document utilisateur n’entre
-dans le build.
-
-## Données et migration
-
-Le programme est installé dans `%LOCALAPPDATA%\Programs\Aurelia`. Les données
-internes sont dans `%LOCALAPPDATA%\Aurelia` et les documents dans
-`Documents\Aurelia`.
-
-Lorsqu’une ancienne base `data\aurelia_v5.db` est détectée et que la nouvelle
-base n’existe pas, Aurelia vérifie et sauvegarde l’ancienne base, crée une copie
-via l’API SQLite, compare les données critiques, puis publie atomiquement la
-nouvelle base.
-
-L’ancienne base n’est jamais supprimée. Une base LocalAppData existante n’est
-jamais écrasée. Les administrateurs d’une base historique doivent renouveler
-leur mot de passe une fois après migration.
-
-## Distribution
-
-Le setup produit n’est pas signé automatiquement. Avant diffusion commerciale,
-signer le setup avec le certificat FEWURA et conserver l’original Tesseract,
-son SHA-256 et l’inventaire complet des licences natives.
+Les anciennes chaînes `INSTALLER_AURELIA.*` et
+`CONSTRUIRE_SETUP_WINDOWS.bat` sont dépréciées. Aucun mécanisme de mise à jour
+automatique n'est ajouté en Phase 6E.

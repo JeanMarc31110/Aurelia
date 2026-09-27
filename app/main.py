@@ -13,12 +13,16 @@ load_dotenv()
 from app.local_config import ensure_local_directories,load_local_config
 from app.resource_paths import program_directory,resource_path
 from app.services.data_migration import migrate_legacy_database
+from app.services.local_logging import configure_local_logging
+from app.services.runtime_migration import migrate_legacy_runtime_data
 from app.services.session_secret import get_or_create_session_secret
 from app.version import APP_VERSION
 
 BASE=program_directory()
 LOCAL_CONFIG=load_local_config(BASE)
 ensure_local_directories(LOCAL_CONFIG)
+configure_local_logging(LOCAL_CONFIG)
+migrate_legacy_runtime_data(LOCAL_CONFIG)
 migrate_legacy_database(LOCAL_CONFIG)
 
 from app.db import init_db,connect
@@ -34,7 +38,7 @@ from app.services.company import get_active_company,save_active_company
 from app.services.ocr import configure_tesseract,ocr_status
 from app.services.email_import import import_eml
 from app.services.supplier_banks import accept_supplier_bank_account,list_supplier_bank_accounts,reject_supplier_bank_account
-from app.services.invoice_review import dashboard_data,get_document_detail,get_invoice_detail,list_invoices
+from app.services.invoice_review import dashboard_data,get_document_detail,get_invoice_detail,list_invoices,work_queue_data
 from app.connectors.gmail_oauth import import_attachments
 from app.connectors.bank_csv import bank_overview,import_bank_csv,propose_matches
 from app.connectors.accounting import export_ebp_csv
@@ -44,9 +48,12 @@ from app.services.accounting_exports import (accounting_config,create_accounting
     export_preview,save_accounting_config)
 from app.services.folder_watcher import FolderWatcher
 from app.services.local_ingestion import unique_destination
-from app.services.local_logging import close_local_logging,configure_local_logging
+from app.services.local_logging import close_local_logging
 from app.services.onboarding import create_initial_setup
 from app.services.sqlite_backups import BackupScheduler,backup_if_due
+from app.services.backup_restore import MaintenanceError,create_complete_backup
+from app.services.updates import (UpdateError,check_configured_update,current_update_status,
+    launch_update_helper,prepare_configured_update,read_update_state,update_root_for_config)
 
 UPLOADS=LOCAL_CONFIG.uploads_dir
 EXPORTS=LOCAL_CONFIG.exports_dir
@@ -177,6 +184,12 @@ def invoices_page(request:Request,status:str="",direction:str="",supplier:str=""
     return templates.TemplateResponse(request,"invoice_list.html",{
         "user":u,"invoices":invoices,"suppliers":suppliers,"filters":filters})
 
+@app.get("/work",response_class=HTMLResponse)
+def work_queue_page(request:Request):
+    u=require(request);groups=work_queue_data()
+    return templates.TemplateResponse(request,"work_queue.html",{
+        "user":u,"groups":groups,"total":sum(len(items) for items in groups.values())})
+
 @app.get("/invoices/{invoice_id}",response_class=HTMLResponse)
 def invoice_detail_page(request:Request,invoice_id:int,message:str="",error:str=""):
     u=require(request);invoice=get_invoice_detail(invoice_id)
@@ -255,6 +268,72 @@ def company_page(request:Request,saved:int=0):
         except (TypeError,json.JSONDecodeError):company["aliases_text"]=""
     return templates.TemplateResponse(request,"company.html",{
         "user":u,"company":company,"saved":bool(saved),"error":None})
+
+@app.get("/settings",response_class=HTMLResponse)
+def settings_page(request:Request):
+    u=require_admin(request)
+    try:update=current_update_status(LOCAL_CONFIG)
+    except UpdateError:update={"status":"ERROR"}
+    return templates.TemplateResponse(request,"settings.html",{
+        "user":u,"app_version":APP_VERSION,"update":update})
+
+def _database_schema_version():
+    con=connect()
+    try:return int(con.execute("PRAGMA user_version").fetchone()[0])
+    finally:con.close()
+
+def _update_page_context(user_value,message="",error=""):
+    try:state=current_update_status(LOCAL_CONFIG)
+    except UpdateError as exc:
+        state={"status":"ERROR"};error=error or str(exc)
+    return {"user":user_value,"app_version":APP_VERSION,"update":state,
+            "update_source_configured":bool(os.getenv("AURELIA_UPDATE_MANIFEST_URL","").strip()),
+            "message":message,"error":error}
+
+@app.get("/settings/update",response_class=HTMLResponse)
+def update_settings_page(request:Request,message:str="",error:str=""):
+    u=require_admin(request)
+    return templates.TemplateResponse(request,"update_settings.html",_update_page_context(u,message,error))
+
+@app.post("/settings/update/check",response_class=HTMLResponse)
+def update_check(request:Request):
+    u=require_admin(request)
+    try:
+        state=check_configured_update(LOCAL_CONFIG,APP_VERSION,_database_schema_version())
+        message=f"Version {state['target_version']} disponible."
+        return templates.TemplateResponse(request,"update_settings.html",_update_page_context(u,message))
+    except (UpdateError,MaintenanceError) as exc:
+        return templates.TemplateResponse(request,"update_settings.html",_update_page_context(u,error=str(exc)),status_code=400)
+
+@app.post("/settings/update/prepare",response_class=HTMLResponse)
+def update_prepare(request:Request):
+    u=require_admin(request)
+    try:
+        _,state=prepare_configured_update(
+            LOCAL_CONFIG,APP_VERSION,_database_schema_version(),
+            lambda:create_complete_backup(LOCAL_CONFIG,operation_label="pre_update_backup")["path"],
+        )
+        message=f"Version {state['target_version']} vérifiée et prête à installer."
+        return templates.TemplateResponse(request,"update_settings.html",_update_page_context(u,message))
+    except (UpdateError,MaintenanceError) as exc:
+        return templates.TemplateResponse(request,"update_settings.html",_update_page_context(u,error=str(exc)),status_code=400)
+
+def _start_update_and_shutdown(state_path,callback):
+    launch_update_helper(state_path,os.getpid())
+    callback()
+
+@app.post("/settings/update/install",response_class=HTMLResponse)
+def update_install(request:Request,background_tasks:BackgroundTasks):
+    require_admin(request)
+    state_path=update_root_for_config(LOCAL_CONFIG)/"update-state.json"
+    state=read_update_state(state_path) if state_path.is_file() else None
+    if not state or state.get("status")!="READY_TO_INSTALL":
+        raise HTTPException(409,"La mise à jour n'est pas prête à être installée")
+    callback=getattr(request.app.state,"shutdown_callback",None)
+    if callback is None:raise HTTPException(503,"Arrêt applicatif indisponible")
+    background_tasks.add_task(_start_update_and_shutdown,state_path,callback)
+    request.session.clear()
+    return HTMLResponse("<!doctype html><html lang='fr'><body><h1>Mise à jour en cours</h1><p>Aurélia va redémarrer après vérification. Ne fermez pas Windows.</p></body></html>")
 
 @app.post("/settings/company")
 def company_save(
@@ -395,13 +474,31 @@ def payments_page(request:Request,message:str="",error:str=""):
     return templates.TemplateResponse(request,"payments.html",{
         "user":u,"overview":payment_overview(),"message":message,"error":error})
 
+@app.get("/integrations",response_class=HTMLResponse)
+def integrations_page(request:Request):
+    u=require(request)
+    return templates.TemplateResponse(request,"integrations.html",{
+        "user":u,"integrations":integrations_status()})
+
 @app.get("/exports/accounting",response_class=HTMLResponse)
 def accounting_exports_page(request:Request,date_from:str="",date_to:str="",direction:str="",
                             payment:str="",exported:str="not_exported",message:str="",error:str=""):
     u=require(request);filters={"date_from":date_from,"date_to":date_to,"direction":direction,
                                 "payment":payment,"exported":exported}
+    preview=export_preview(filters)
+    config_help={
+        "journal_purchase":("Journal d’achat","Utilisé pour enregistrer les factures fournisseurs."),
+        "journal_sale":("Journal de ventes","Utilisé pour enregistrer les factures clients."),
+        "account_supplier":("Compte fournisseurs","Compte collectif des fournisseurs."),
+        "account_customer":("Compte clients","Compte collectif des clients."),
+        "account_vat_deductible":("Compte TVA déductible","Compte utilisé pour la TVA sur les achats."),
+        "account_vat_collected":("Compte TVA collectée","Compte utilisé pour la TVA sur les ventes."),
+    }
+    missing_config=[{"key":key,"label":label,"help":help_text}
+                    for key,(label,help_text) in config_help.items() if not preview["config"].get(key)]
     return templates.TemplateResponse(request,"accounting_exports.html",{
-        "user":u,"preview":export_preview(filters),"filters":filters,"message":message,"error":error})
+        "user":u,"preview":preview,"filters":filters,"message":message,"error":error,
+        "config_help":config_help,"missing_config":missing_config})
 
 @app.post("/exports/accounting/config")
 def accounting_config_save(request:Request,journal_purchase:str=Form(""),journal_sale:str=Form(""),

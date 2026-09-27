@@ -1,47 +1,42 @@
-AURELIA V5.0.1 — DISTRIBUTION WINDOWS PROFESSIONNELLE
-======================================================
+AURELIA — CHAÎNE WINDOWS DE PRODUCTION
+======================================
 
-OBJECTIF
---------
-Cette distribution remplace l'installation client par fichiers .BAT.
+VERSION.txt est l'autorité de version. requirements.lock.txt et
+requirements-build.txt verrouillent les dépendances produit et de build.
 
-Le client final doit recevoir uniquement :
+PHASE 6D — PORTABLE PYINSTALLER ONEDIR
+--------------------------------------
+Depuis un dépôt propre :
 
-    AURELIA_Setup_5.0.1.exe
+    BUILD_WINDOWS_RELEASE.bat
 
-Le Setup installe AURELIA dans Program Files avec ses dépendances, crée les raccourcis et fournit un désinstalleur Windows. Le client n'a pas besoin d'installer Python.
+Sorties principales :
 
-IMPORTANT — SMARTSCREEN / MICROSOFT DEFENDER
----------------------------------------------
-Un installateur EXE nouvellement créé mais NON SIGNE peut encore déclencher un avertissement Microsoft SmartScreen.
+    release\Aurelia-X.Y.Z\app\Aurelia.exe
+    release\Aurelia-X.Y.Z-portable.zip
+    release\Aurelia-X.Y.Z\build-manifest.json
 
-Pour une distribution commerciale FEWURA :
-1. Obtenir un certificat de signature de code pour FEWURA.
-2. Construire AURELIA_Setup_5.0.1.exe.
-3. Signer l'installateur avec SIGNER_SETUP_FEWURA.bat.
-4. Vérifier la signature avant publication.
-5. Distribuer toujours les versions signées avec la même identité éditeur.
+PHASE 6E — INSTALLATEUR INNO SETUP
+----------------------------------
+Après validation de l'artefact Phase 6D exact :
 
-Ne demandez pas aux clients de désactiver Microsoft Defender, SmartScreen ou Smart App Control.
+    BUILD_WINDOWS_INSTALLER.bat
 
-CONSTRUCTION
-------------
-Sur un PC Windows de développement :
-1. Installer Python 3.11+.
-2. Installer Inno Setup 6.
-3. Lancer CONSTRUIRE_SETUP_WINDOWS.bat.
+Le script vérifie le dépôt, les empreintes Phase 6D, exécute la suite de tests,
+puis compile :
 
-Le résultat est créé dans :
-    installer\output\AURELIA_Setup_5.0.1.exe
+    release\Aurelia-Setup-X.Y.Z.exe
 
-SIGNATURE
----------
-Installer le Windows SDK / SignTool, configurer FEWURA_CERT_SHA1 avec l'empreinte du certificat puis lancer SIGNER_SETUP_FEWURA.bat.
+Validation installateur isolée :
 
-CLIENT FINAL
-------------
-Le client reçoit uniquement le Setup signé, l'installe avec l'assistant Windows et lance AURELIA depuis le Bureau ou le Menu Démarrer.
+    .buildvenv\Scripts\python.exe tools\validate_windows_installer.py
 
-SECURITE
---------
-Cette correction ne désactive ni ne contourne aucune protection Windows. Elle remplace le packaging de développement par une chaîne de distribution standard et prévoit la signature Authenticode appropriée.
+La validation produit installer-validation-report.json et
+SHA256SUMS-INSTALLER.txt. La signature s'effectue séparément avec le certificat
+Authenticode officiel via SIGNER_SETUP_FEWURA.bat. En l'absence de certificat,
+la signature reste explicitement bloquée : aucun certificat factice n'est créé.
+
+ANCIENNES CHAÎNES
+-----------------
+INSTALLER_AURELIA.bat/.ps1 et CONSTRUIRE_SETUP_WINDOWS.bat sont dépréciés.
+Ils ne doivent pas être utilisés pour produire une livraison client.

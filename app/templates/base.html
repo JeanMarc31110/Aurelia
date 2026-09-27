@@ -1,9 +1,10 @@
 <!doctype html>
-<html lang="fr" data-theme="aurelia-dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="dark"><meta name="theme-color" content="#09111f"><title>{% block title %}Aurelia{% endblock %}</title><link rel="icon" href="data:image/svg+xml,%3Csvg viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230d1930'/%3E%3Cpath d='M14 47 29 14h7l14 33h-9l-3-8H26l-3 8zm15-16h7l-3-9z' fill='%2379a8ff'/%3E%3C/svg%3E"><link rel="stylesheet" href="/static/style.css"></head>
-<body>
+<html lang="fr" data-theme="aurelia-light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><meta name="theme-color" content="#0ea5a0"><meta name="application-name" content="Aurélia"><title>{% block title %}Aurélia{% endblock %}</title><link rel="icon" type="image/svg+xml" sizes="any" href="/static/brand/aurelia-symbol.svg"><link rel="mask-icon" href="/static/brand/aurelia-symbol-mono.svg" color="#0ea5a0"><link rel="stylesheet" href="/static/style.css"></head>
+<body class="app-body page-{{active_page|default('default')}}">
 <svg width="0" height="0" class="icon-sprite" aria-hidden="true">
   <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10M9 20v-6h6v6"/></symbol>
   <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
+  <symbol id="i-work" viewBox="0 0 24 24"><path d="M8 5h8M8 9h8M8 13h5"/><path d="m14 18 2 2 4-5"/><rect x="4" y="3" width="16" height="18" rx="2"/></symbol>
   <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/></symbol>
   <symbol id="i-bank" viewBox="0 0 24 24"><path d="m3 9 9-5 9 5M5 10h14M6 10v7M10 10v7M14 10v7M18 10v7M4 20h16"/></symbol>
   <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></symbol>
@@ -15,20 +16,17 @@
   <symbol id="i-scan" viewBox="0 0 24 24"><path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4M8 12h8"/></symbol>
 </svg>
 <div class="app-shell"><aside class="sidebar" aria-label="Navigation principale">
-  <a href="/" class="brand" aria-label="Accueil Aurelia"><span class="aurelia-mark" aria-hidden="true"><span>A</span></span><span><span class="brand-name">AURELIA</span><span class="brand-version">Espace local</span></span></a>
-  <nav class="sidebar-nav" aria-label="Sections Aurelia">
-    <a class="nav-link {{'active' if active_page=='dashboard' else ''}}" href="/"><svg class="nav-icon"><use href="#i-home"/></svg><span>Tableau de bord</span></a>
-    <a class="nav-link {{'active' if active_page in ['invoices','invoice','document'] else ''}}" href="/invoices"><svg class="nav-icon"><use href="#i-file"/></svg><span>Factures</span></a>
-    <a class="nav-link {{'active' if active_page=='bank' else ''}}" href="/bank#reconciliations"><svg class="nav-icon"><use href="#i-link"/></svg><span>Rapprochements</span></a>
-    <a class="nav-link" href="/bank"><svg class="nav-icon"><use href="#i-bank"/></svg><span>Banque</span></a>
-    <a class="nav-link {{'active' if active_page=='payments' else ''}}" href="/payments"><svg class="nav-icon"><use href="#i-calendar"/></svg><span>Échéances</span></a>
-    <a class="nav-link {{'active' if active_page=='exports' else ''}}" href="/exports/accounting"><svg class="nav-icon"><use href="#i-export"/></svg><span>Exports</span></a>
-    <a class="nav-link {{'active' if active_page=='company' else ''}}" href="/settings/company"><svg class="nav-icon"><use href="#i-building"/></svg><span>Entreprise</span></a>
-    <a class="nav-link {{'active' if active_page in ['ocr','banks','emails'] else ''}}" href="/settings/ocr"><svg class="nav-icon"><use href="#i-settings"/></svg><span>Paramètres</span></a>
-    <details class="nav-tools"><summary>Outils locaux</summary><a href="/emails"><svg class="nav-icon"><use href="#i-mail"/></svg>Import e-mail</a><a href="/settings/supplier-banks"><svg class="nav-icon"><use href="#i-shield"/></svg>RIB fournisseurs</a><a href="/settings/ocr"><svg class="nav-icon"><use href="#i-scan"/></svg>Configuration OCR</a></details>
+  <a href="/" class="brand" aria-label="Accueil Aurélia"><img class="brand-symbol" src="/static/brand/aurelia-symbol.svg" width="34" height="34" alt=""><span><span class="brand-name">Aurélia</span><span class="brand-version">Espace local</span></span></a>
+  <nav class="sidebar-nav" aria-label="Sections Aurélia">
+    <a class="nav-link {{'active' if active_page=='dashboard' else ''}}" {% if active_page=='dashboard' %}aria-current="page"{% endif %} href="/"><svg class="nav-icon"><use href="#i-home"/></svg><span>Accueil</span></a>
+    <a class="nav-link {{'active' if active_page in ['work','invoices','invoice','document'] else ''}}" {% if active_page in ['work','invoices','invoice','document'] %}aria-current="page"{% endif %} href="/work"><svg class="nav-icon"><use href="#i-work"/></svg><span>À traiter</span></a>
+    <a class="nav-link {{'active' if active_page in ['bank','payments'] else ''}}" {% if active_page in ['bank','payments'] %}aria-current="page"{% endif %} href="/bank"><svg class="nav-icon"><use href="#i-bank"/></svg><span>Banque</span></a>
+    <a class="nav-link {{'active' if active_page=='exports' else ''}}" {% if active_page=='exports' %}aria-current="page"{% endif %} href="/exports/accounting"><svg class="nav-icon"><use href="#i-export"/></svg><span>Comptabilité</span></a>
+    <a class="nav-link {{'active' if active_page in ['integrations','emails'] else ''}}" {% if active_page in ['integrations','emails'] %}aria-current="page"{% endif %} href="/integrations"><svg class="nav-icon"><use href="#i-mail"/></svg><span>Intégrations</span></a>
+    <a class="nav-link {{'active' if active_page in ['settings','company','ocr','banks'] else ''}}" {% if active_page in ['settings','company','ocr','banks'] %}aria-current="page"{% endif %} href="/settings"><svg class="nav-icon"><use href="#i-settings"/></svg><span>Paramètres</span></a>
   </nav>
   <div class="sidebar-footnote"><span class="local-dot"></span><span>Système local</span></div>
-  {% if user and user.role=='admin' %}<div class="sidebar-footer"><form method="post" action="/shutdown" class="shutdown-form"><button type="submit" class="shutdown-button">Quitter Aurelia</button></form></div>{% endif %}
+  {% if user and user.role=='admin' %}<div class="sidebar-footer"><form method="post" action="/shutdown" class="shutdown-form"><button type="submit" class="shutdown-button">Quitter Aurélia</button></form></div>{% endif %}
 </aside>
-<div class="app-column"><header class="topbar"><div class="topbar-heading"><div class="topbar-title">{% block page_name %}Aurelia{% endblock %}</div><div class="topbar-context">Aurelia propose · vous décidez</div></div><div class="account-area"><span class="local-status"><span class="local-dot"></span>Local</span><div class="account-chip"><span class="avatar">{{user.username[0] if user and user.username else 'A'}}</span><span>{{user.username if user else ''}}</span></div><a href="/logout" class="logout-link">Déconnexion</a></div></header><main class="content">{% block content %}{% endblock %}</main></div></div>
+<div class="app-column"><header class="topbar"><div class="topbar-heading"><div class="topbar-title">{% block page_name %}Aurélia{% endblock %}</div><div class="topbar-context">Vos données · votre décision</div></div><div class="account-area"><span class="local-status"><span class="local-dot"></span>Local</span><div class="account-chip"><span class="avatar">{{user.username[0] if user and user.username else 'A'}}</span><span>{{user.username if user else ''}}</span></div><a href="/logout" class="logout-link">Déconnexion</a></div></header><main class="content">{% block content %}{% endblock %}</main></div></div>
 </body></html>

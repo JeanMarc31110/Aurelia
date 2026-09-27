@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% set active_page='settings' %}
+{% block title %}Paramètres — Aurélia{% endblock %}{% block page_name %}Paramètres{% endblock %}
+{% block content %}
+<div class="settings-page secondary-page">
+<header class="page-header"><div class="page-header-copy"><p class="eyebrow">Configuration locale</p><h1>Paramètres</h1><p class="page-subtitle">Retrouvez les réglages par usage. Les options techniques restent regroupées dans la section avancée.</p></div></header>
+<section class="settings-section" aria-labelledby="settings-daily"><div class="section-heading"><div><p class="eyebrow">Usage quotidien</p><h2 id="settings-daily">Votre organisation</h2><p class="muted">Les informations qui structurent les documents et les contrôles.</p></div></div><div class="settings-grid">
+  <section class="card settings-card"><p class="eyebrow">Entreprise</p><h2>Identité et coordonnées</h2><p>Raison sociale, contacts, informations fiscales et coordonnées bancaires de votre entreprise.</p><a class="btn btn-secondary" href="/settings/company">Gérer l’entreprise</a></section>
+  <section class="card settings-card"><p class="eyebrow">Fournisseurs / banque</p><h2>RIB fournisseurs</h2><p>Contrôlez les coordonnées bancaires détectées et confirmez les changements autorisés.</p><a class="btn btn-secondary" href="/settings/supplier-banks">Gérer les RIB fournisseurs</a></section>
+  <section class="card settings-card"><p class="eyebrow">Sources / documents</p><h2>Imports et connexions</h2><p>Accédez aux sources e-mail et aux intégrations réellement disponibles.</p><a class="btn btn-secondary" href="/integrations">Gérer les intégrations</a></section>
+</div></section>
+<section class="settings-section settings-advanced" aria-labelledby="settings-advanced"><div class="section-heading"><div><p class="eyebrow">Configuration technique</p><h2 id="settings-advanced">Avancé</h2><p class="muted">Ces réglages ne sont utiles qu’en cas de diagnostic, de mise à jour ou d’installation OCR particulière.</p></div></div><div class="settings-grid">
+  <section class="card settings-card"><div><p class="eyebrow">Mise à jour</p><h2>Version {{app_version}}</h2><p>{{'Nouvelle version disponible : ' ~ update.target_version if update.status in ['AVAILABLE','READY_TO_INSTALL'] else 'Recherchez et préparez une nouvelle version en toute sécurité.'}}</p></div><a class="btn btn-secondary" href="/settings/update">Gérer les mises à jour</a></section>
+  <section class="card settings-card"><div><p class="eyebrow">OCR local</p><h2>Tesseract et langues</h2><p>Vérifiez le moteur de lecture, son chemin local et les langues installées.</p></div><a class="btn btn-secondary" href="/settings/ocr">Ouvrir les réglages avancés</a></section>
+</div></section>
+</div>
+{% endblock %}

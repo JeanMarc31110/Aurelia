@@ -1,42 +1,24 @@
-AURELIA 5.1.0 — INSTALLATION WINDOWS
-=====================================
+AURELIA — INSTALLATION WINDOWS
+==============================
 
-1. Lancer AureliaSetup.exe.
-2. Conserver le dossier proposé ou choisir un autre dossier programme.
-3. Lancer Aurelia depuis le menu Démarrer ou le raccourci Bureau optionnel.
-4. Le navigateur s'ouvre sur http://127.0.0.1:8000 lorsque le serveur est prêt.
-5. À la première installation, créer l'administrateur et renseigner l'entreprise.
+1. Vérifier l'empreinte SHA-256 fournie avec Aurelia-Setup-X.Y.Z.exe.
+2. Lancer Aurelia-Setup-X.Y.Z.exe avec le compte Windows qui utilisera Aurelia.
+3. Conserver le dossier proposé : %LOCALAPPDATA%\Programs\Aurelia.
+4. Lancer Aurelia depuis le menu Démarrer.
+5. Au premier lancement, créer le compte administrateur et le profil société.
 
-Aucun Python, PowerShell, pip ou Tesseract séparé n'est requis sur le PC client.
-Aucun compte ou mot de passe par défaut n'est créé.
+Aucun Python, pip ou Tesseract séparé n'est requis. Aurelia n'installe aucun
+mot de passe par défaut et n'exige pas de droits administrateur.
 
-DONNÉES
--------
+DONNÉES ET DÉSINSTALLATION
+--------------------------
+Les données internes restent sous %LOCALAPPDATA%\Aurelia et les documents sous
+%USERPROFILE%\Documents\Aurelia. Réinstaller ou désinstaller l'application ne
+supprime pas ces données. Utiliser les fonctions de sauvegarde Aurelia avant
+toute intervention importante.
 
-Données internes : %LOCALAPPDATA%\Aurelia
-Documents :        %USERPROFILE%\Documents\Aurelia
-
-La mise à jour et la désinstallation conservent ces deux emplacements. La base,
-les factures, les originaux, les erreurs, les exports et les backups ne sont pas
-supprimés par le désinstalleur.
-
-OCR
----
-
-Le produit embarque Tesseract 5.4 et les langues eng, fra, spa et osd. Les
-notices sont disponibles dans THIRD_PARTY_NOTICES.txt.
-
-SÉCURITÉ
---------
-
-Aurelia écoute uniquement sur 127.0.0.1:8000. Une seule instance peut utiliser
-un environnement de données. Les décisions financières sensibles restent
-humaines.
-
-DIAGNOSTIC
-----------
-
-Journal : %LOCALAPPDATA%\Aurelia\logs\aurelia.log
-
-Si le port 8000 est occupé par un autre logiciel, Aurelia le signale et ne
-choisit pas silencieusement un autre port.
+SIGNATURE
+---------
+Avant diffusion commerciale, la signature Authenticode doit être valide et
+provenir du certificat officiel de l'éditeur. Une version non signée est un
+artefact de validation technique, pas une livraison client finale.

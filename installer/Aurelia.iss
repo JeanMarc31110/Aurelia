@@ -9,11 +9,12 @@
 AppId={{8CE2A2D7-E18A-4B10-A913-2AC7CE2188C1}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
+AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 DefaultDirName={localappdata}\Programs\Aurelia
 DefaultGroupName=Aurelia
-OutputDir=output
-OutputBaseFilename=AureliaSetup
+OutputDir=..\release
+OutputBaseFilename=Aurelia-Setup-{#MyAppVersion}
 Compression=lzma2
 SolidCompression=yes
 ArchitecturesAllowed=x64compatible
@@ -21,6 +22,7 @@ ArchitecturesInstallIn64BitMode=x64compatible
 PrivilegesRequired=lowest
 WizardStyle=modern
 UninstallDisplayName=Aurelia
+UninstallDisplayIcon={app}\{#MyAppExeName}
 CreateUninstallRegKey=yes
 SetupLogging=yes
 CloseApplications=yes
@@ -30,15 +32,17 @@ UsePreviousAppDir=yes
 UsePreviousGroup=yes
 MinVersion=10.0.17763
 VersionInfoVersion={#MyAppVersion}
+VersionInfoProductVersion={#MyAppVersion}
 VersionInfoCompany={#MyAppPublisher}
-VersionInfoDescription=Aurelia — facturation et pré-comptabilité locale
+VersionInfoDescription=Aurelia - facturation et pre-comptabilite locale
 VersionInfoProductName={#MyAppName}
 
 [Languages]
 Name: "french"; MessagesFile: "compiler:Languages\French.isl"
 
 [Files]
-Source: "..\dist\Aurelia\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+; The installer consumes the already validated Phase 6D onedir artifact.
+Source: "..\release\Aurelia-{#MyAppVersion}\app\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Tasks]
 Name: "desktopicon"; Description: "Créer un raccourci sur le Bureau"; GroupDescription: "Raccourcis :"; Flags: unchecked

@@ -1,8 +1,8 @@
 {% extends "auth_base.html" %}
-{% block title %}Connexion — Aurelia{% endblock %}
+{% block title %}Connexion — Aurélia{% endblock %}
 {% block content %}
-<p class="eyebrow">Espace sécurisé</p><h1>Connexion</h1><p class="muted">Accédez à votre environnement Aurelia local.</p>
-{% if configured %}<div class="notice success">Configuration terminée. Vous pouvez vous connecter.</div>{% endif %}
-{% if error %}<div class="notice error">{{error}}</div>{% endif %}
-<form method="post"><label>Nom d’utilisateur<input name="username" autocomplete="username" required autofocus></label><label>Mot de passe<input type="password" name="password" autocomplete="current-password" required></label><button class="btn" type="submit">Se connecter</button></form>
+<p class="eyebrow">Espace privé et local</p><h1>Connexion</h1><p class="muted">Retrouvez vos documents et vos décisions dans votre environnement Aurélia.</p>
+{% if configured %}<div class="notice success" role="status">Configuration terminée. Vous pouvez vous connecter.</div>{% endif %}
+{% if error %}<div class="notice error" id="login-error" role="alert">{{error}}</div>{% endif %}
+<form method="post"{% if error %} aria-describedby="login-error"{% endif %}><label>Nom d’utilisateur<input name="username" autocomplete="username" required autofocus></label><label>Mot de passe<input type="password" name="password" autocomplete="current-password" required></label><button class="btn" type="submit">Se connecter</button></form>
 {% endblock %}

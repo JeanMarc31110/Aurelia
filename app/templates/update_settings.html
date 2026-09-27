@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% set active_page='settings' %}
+{% block title %}Mise à jour — Aurélia{% endblock %}{% block page_name %}Mise à jour{% endblock %}
+{% block content %}
+<div class="advanced-page secondary-page">
+<header class="page-header"><div class="page-header-copy"><p class="eyebrow">Paramètres · Mise à jour</p><h1>Mise à jour d’Aurélia</h1><p class="page-subtitle">Téléchargez, vérifiez et installez une nouvelle version sans modifier vos données.</p></div><a class="btn btn-secondary" href="/settings">Retour aux paramètres</a></header>
+{% if message %}<div class="notice success" role="status"><div>{{message}}</div></div>{% endif %}
+{% if error %}<div class="notice error" role="alert"><div>{{error}}</div></div>{% endif %}
+<section class="card technical-card">
+  <div class="card-header"><div><p class="eyebrow">Version installée</p><h2>Aurélia {{app_version}}</h2></div><span class="status {{'status-approved' if update.status in ['UP_TO_DATE','COMPLETED'] else 'status-review'}}">{{update.status|replace('_',' ')|title}}</span></div>
+  {% if update.target_version %}<dl class="facts"><dt>Version disponible</dt><dd>{{update.target_version}}</dd><dt>État</dt><dd>{{update.status|replace('_',' ')|title}}</dd>{% if update.manifest and update.manifest.release_summary %}<dt>Résumé</dt><dd>{{update.manifest.release_summary}}</dd>{% endif %}</dl>{% endif %}
+  {% if update.status=='RECOVERY_REQUIRED' %}<div class="notice error"><div><b>Récupération contrôlée requise.</b> Le schéma de données a changé ; Aurélia n’a pas relancé automatiquement l’ancienne application. Les données n’ont pas été restaurées ni remplacées.</div></div>{% endif %}
+  {% if not update_source_configured %}<div class="notice info"><div>La source de mise à jour n’est pas encore configurée. Renseignez l’URL HTTPS par la configuration de déploiement.</div></div>{% endif %}
+  <div class="page-actions">
+    <form method="post" action="/settings/update/check"><button class="btn btn-secondary" type="submit" {% if not update_source_configured %}disabled{% endif %}>Rechercher une mise à jour</button></form>
+    {% if update.status=='AVAILABLE' %}<form method="post" action="/settings/update/prepare"><button class="btn" type="submit">Télécharger et vérifier</button></form>{% endif %}
+    {% if update.status=='READY_TO_INSTALL' %}<form method="post" action="/settings/update/install"><button class="btn" type="submit">Installer la version {{update.target_version}}</button></form>{% endif %}
+  </div>
+  <p class="small subtle">L’installation nécessite votre confirmation. La version précédente reste disponible jusqu’à la validation du redémarrage. Les données client suivent un cycle séparé.</p>
+</section>
+</div>
+{% endblock %}
