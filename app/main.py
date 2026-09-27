@@ -51,6 +51,9 @@ from app.services.local_ingestion import unique_destination
 from app.services.local_logging import close_local_logging
 from app.services.onboarding import create_initial_setup
 from app.services.sqlite_backups import BackupScheduler,backup_if_due
+from app.services.backup_restore import MaintenanceError,create_complete_backup
+from app.services.updates import (UpdateError,check_configured_update,current_update_status,
+    launch_update_helper,prepare_configured_update,read_update_state,update_root_for_config)
 
 UPLOADS=LOCAL_CONFIG.uploads_dir
 EXPORTS=LOCAL_CONFIG.exports_dir
@@ -269,7 +272,68 @@ def company_page(request:Request,saved:int=0):
 @app.get("/settings",response_class=HTMLResponse)
 def settings_page(request:Request):
     u=require_admin(request)
-    return templates.TemplateResponse(request,"settings.html",{"user":u})
+    try:update=current_update_status(LOCAL_CONFIG)
+    except UpdateError:update={"status":"ERROR"}
+    return templates.TemplateResponse(request,"settings.html",{
+        "user":u,"app_version":APP_VERSION,"update":update})
+
+def _database_schema_version():
+    con=connect()
+    try:return int(con.execute("PRAGMA user_version").fetchone()[0])
+    finally:con.close()
+
+def _update_page_context(user_value,message="",error=""):
+    try:state=current_update_status(LOCAL_CONFIG)
+    except UpdateError as exc:
+        state={"status":"ERROR"};error=error or str(exc)
+    return {"user":user_value,"app_version":APP_VERSION,"update":state,
+            "update_source_configured":bool(os.getenv("AURELIA_UPDATE_MANIFEST_URL","").strip()),
+            "message":message,"error":error}
+
+@app.get("/settings/update",response_class=HTMLResponse)
+def update_settings_page(request:Request,message:str="",error:str=""):
+    u=require_admin(request)
+    return templates.TemplateResponse(request,"update_settings.html",_update_page_context(u,message,error))
+
+@app.post("/settings/update/check",response_class=HTMLResponse)
+def update_check(request:Request):
+    u=require_admin(request)
+    try:
+        state=check_configured_update(LOCAL_CONFIG,APP_VERSION,_database_schema_version())
+        message=f"Version {state['target_version']} disponible."
+        return templates.TemplateResponse(request,"update_settings.html",_update_page_context(u,message))
+    except (UpdateError,MaintenanceError) as exc:
+        return templates.TemplateResponse(request,"update_settings.html",_update_page_context(u,error=str(exc)),status_code=400)
+
+@app.post("/settings/update/prepare",response_class=HTMLResponse)
+def update_prepare(request:Request):
+    u=require_admin(request)
+    try:
+        _,state=prepare_configured_update(
+            LOCAL_CONFIG,APP_VERSION,_database_schema_version(),
+            lambda:create_complete_backup(LOCAL_CONFIG,operation_label="pre_update_backup")["path"],
+        )
+        message=f"Version {state['target_version']} vérifiée et prête à installer."
+        return templates.TemplateResponse(request,"update_settings.html",_update_page_context(u,message))
+    except (UpdateError,MaintenanceError) as exc:
+        return templates.TemplateResponse(request,"update_settings.html",_update_page_context(u,error=str(exc)),status_code=400)
+
+def _start_update_and_shutdown(state_path,callback):
+    launch_update_helper(state_path,os.getpid())
+    callback()
+
+@app.post("/settings/update/install",response_class=HTMLResponse)
+def update_install(request:Request,background_tasks:BackgroundTasks):
+    require_admin(request)
+    state_path=update_root_for_config(LOCAL_CONFIG)/"update-state.json"
+    state=read_update_state(state_path) if state_path.is_file() else None
+    if not state or state.get("status")!="READY_TO_INSTALL":
+        raise HTTPException(409,"La mise à jour n'est pas prête à être installée")
+    callback=getattr(request.app.state,"shutdown_callback",None)
+    if callback is None:raise HTTPException(503,"Arrêt applicatif indisponible")
+    background_tasks.add_task(_start_update_and_shutdown,state_path,callback)
+    request.session.clear()
+    return HTMLResponse("<!doctype html><html lang='fr'><body><h1>Mise à jour en cours</h1><p>Aurélia va redémarrer après vérification. Ne fermez pas Windows.</p></body></html>")
 
 @app.post("/settings/company")
 def company_save(

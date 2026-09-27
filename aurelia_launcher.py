@@ -62,6 +62,9 @@ def show_message(message, error=False):
 
 
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] == "--apply-update":
+        from app.services.update_helper import main as update_helper_main
+        return update_helper_main(sys.argv[2:])
     os.chdir(program_directory())
     config = ensure_local_directories(load_local_config())
     configure_local_logging(config)

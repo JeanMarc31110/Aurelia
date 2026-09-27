@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class WindowsBuildToolingTests(unittest.TestCase):
     def test_version_txt_is_the_product_version_authority(self):
-        self.assertEqual(read_product_version(ROOT), "5.3.0")
+        self.assertEqual(read_product_version(ROOT), "5.3.1")
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             (root / "VERSION.txt").write_text("5.4\n", encoding="utf-8")
